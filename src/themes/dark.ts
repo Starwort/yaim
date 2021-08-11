@@ -20,34 +20,9 @@ const theme = createMuiTheme({
             16: {main: '#404040'},
             24: {main: '#424242'},
         },
-        modelled: {
-            main: 'gold',
-            transparent: 'rgba(255, 215, 0, 0.3)',
-        },
-        winter: {
-            main: '#3c84c6',
-            transparent: 'rgba(60, 132, 198, 0.3)',
-            contrastText: 'rgba(0,0,0,87%)'
-        },
-        spring: {
-            main: '#38761c',
-            transparent: 'rgba(56, 118, 28, 0.3)',
-            contrastText: 'rgba(0,0,0,87%)'
-        },
-        summer: {
-            main: '#e69038',
-            transparent: 'rgba(230, 144, 56, 0.3)',
-            contrastText: 'rgba(0,0,0,87%)'
-        },
-        autumn: {
-            main: '#b45f04',
-            transparent: 'rgba(180, 95, 4, 0.3)',
-            contrastText: 'rgba(0,0,0,87%)'
-        },
         primary: {
             main: '#bb86fc',
             contrastText: 'rgba(0,0,0,87%)',
-            transparent: 'rgba(187, 134, 252, 0.3)',
         },
         secondary: {
             main: '#03dac6',
@@ -55,7 +30,6 @@ const theme = createMuiTheme({
         },
         error: {
             main: '#cf6679',
-            transparent: 'rgba(207, 102, 121, 0.3)',
         },
         background: {
             paper: '#1e1e1e',

@@ -3,6 +3,7 @@
   "homepage": "./",
   "version": "0.0.0",
   "private": false,
+  "main": "electron.js",
   "dependencies": {
     "@material-ui/core": "^4.12.3",
     "@material-ui/icons": "^4.11.2",

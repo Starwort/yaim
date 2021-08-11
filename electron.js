@@ -1,17 +1,33 @@
 // Modules to control application life and create native browser window
-const {app, BrowserWindow} = require('electron');
+const {app, BrowserWindow, ipcMain, dialog} = require('electron');
+const fs = require('fs');
+const path = require('path');
+const url = require('url');
 
 let mainWindow;
 
 function createWindow() {
     // Create the browser window.
-    mainWindow = new BrowserWindow({width: 800, height: 600});
+    mainWindow = new BrowserWindow({
+        width: 800,
+        height: 600,
+        // webPreferences: {
+        //     contextIsolation: true, // protect against prototype pollution
+        //     enableRemoteModule: false,
+        //     preload: path.join(__dirname, "preload.js"),
+        // },
+    });
 
     // and load the index.html of the app.
-    mainWindow.loadURL('http://localhost:3000');
+    const startUrl = process.env.ELECTRON_START_URL || url.format({
+        pathname: path.join(__dirname, '/index.html'),
+        protocol: 'file:',
+        slashes: true
+    });
+    mainWindow.loadURL(startUrl);
 
     // Open the DevTools.
-    mainWindow.webContents.openDevTools();
+    // mainWindow.webContents.openDevTools();
 
     // Emitted when the window is closed.
     mainWindow.on('closed', function () {
@@ -44,5 +60,37 @@ app.on('activate', function () {
     }
 });
 
+async function getFileSystemTree(filePath) {
+    const tree = {
+        name: path.basename(filePath),
+        type: 'dir',
+        children: []
+    };
+    const stats = await fs.stat(filePath);
+    if (stats.isDirectory()) {
+        const files = await fs.readdir(filePath);
+        files.forEach(file => {
+            const filePath = path.join(filePath, file);
+            tree.children.push(await getFileSystemTree(filePath));
+        });
+    } else {
+        tree.type = 'file';
+    }
+    return tree;
+}
+
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
+ipcMain.on('get-locale-files', async (event, _) => {
+    const result = await dialog.showOpenDialog(
+        mainWindow,
+        {
+            title: 'Select locale directory',
+            properties: ['openDirectory'],
+        }
+    );
+    // event.sender.send('get-locale-files-reply', result);
+    const files = await getFileSystemTree(result);
+    console.log(files);
+    event.sender.send('set-locale-files', files);
+});

@@ -10,19 +10,23 @@ declare global {
         count: (elem: T) => number;
     }
 }
+// eslint-disable-next-line no-extend-native
 String.prototype.capitalise = function () {
     return this.charAt(0).toUpperCase() + this.slice(1);
 };
+// eslint-disable-next-line no-extend-native
 Array.prototype.rotated = function (by: number) {
     by = by % this.length;
     return this.slice(by, this.length).concat(this.slice(0, by));
 };
+// eslint-disable-next-line no-extend-native
 Array.prototype.rotate = function (by: number) {
     by = by % this.length;
     while (this.length && by < 0) by += this.length;
     this.push.apply(this, this.splice(0, by));
     return this;
 };
+// eslint-disable-next-line no-extend-native
 Array.prototype.count = function (elem) {
     return this.filter(item => item === elem).length;
 };

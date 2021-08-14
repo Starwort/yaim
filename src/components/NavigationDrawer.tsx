@@ -9,16 +9,19 @@ interface DrawerContentProps {
     onSelect?: () => void;
     setTheme: (theme: ThemeName) => void;
     setLangOpen: (value: boolean) => void;
+    children: React.ReactNode;
 }
 function DrawerContent({
     onSelect,
     setTheme,
     setLangOpen,
+    children,
 }: DrawerContentProps) {
     const {t} = useTranslation('core');
     const theme = useTheme();
     const newTheme: ThemeName = theme.name === 'dark' ? 'light' : 'dark';
     return <>
+        {children}
         <div style={{flexGrow: 1}} />
         <ListItem button onClick={() => {setLangOpen(true); if (onSelect) {onSelect();} }}>
             <ListItemIcon>
@@ -44,6 +47,7 @@ interface NavigationDrawerProps {
     setOpen: (value: boolean) => void;
     setTheme: (theme: ThemeName) => void;
     setLangOpen: (value: boolean) => void;
+    children: React.ReactNode;
 }
 
 
@@ -63,7 +67,9 @@ export function NavigationDrawer(props: NavigationDrawerProps) {
                     onSelect={() => props.setOpen(false)}
                     setTheme={props.setTheme}
                     setLangOpen={props.setLangOpen}
-                />
+                >
+                    {props.children}
+                </DrawerContent>
             </Drawer>
         </Hidden>
         <Hidden xsDown>
@@ -76,7 +82,9 @@ export function NavigationDrawer(props: NavigationDrawerProps) {
                 <DrawerContent
                     setTheme={props.setTheme}
                     setLangOpen={props.setLangOpen}
-                />
+                >
+                    {props.children}
+                </DrawerContent>
             </Drawer>
         </Hidden>
     </>;

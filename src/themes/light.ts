@@ -1,9 +1,9 @@
-import {createMuiTheme} from '@material-ui/core/styles';
+import {createTheme} from '@material-ui/core/styles';
 import '../prototype_mods';
 import {commonProps} from './common_theme_data';
 
 // Normal or default theme
-const theme = createMuiTheme({
+const theme = createTheme({
     palette: {
         type: 'light',
         opacity: 0.6,

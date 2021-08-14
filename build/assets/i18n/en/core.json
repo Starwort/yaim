@@ -1,0 +1,11 @@
+{
+    "title": "YAIM",
+    "sidebar": {
+        "lang": "Set Language",
+        "theme": "Toggle Theme"
+    },
+    "lang": {
+        "choose": "Site language",
+        "en": "English (English)"
+    }
+}

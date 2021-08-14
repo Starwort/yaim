@@ -33,7 +33,7 @@ i18n.use(Backend)
     .use(LanguageDetector)
     .use(initReactI18next)
     .init({
-        backend: {loadPath: '/assets/i18n/{{lng}}/{{ns}}.json'},
+        backend: {loadPath: './assets/i18n/{{lng}}/{{ns}}.json'},
         fallbackLng: 'en',
         debug: process.env.NODE_ENV === 'development',
 

@@ -229,15 +229,29 @@ export function useRerender() {
     return update;
 }
 
-export type FileTree = {
-    loaded: boolean;
-    files: {
-        [fileName: string]: FileTree | I18nEntry;
+export type I18nData = {
+    [key: string]: string | I18nData;
+};
+
+type LoadedFileTreeFolder = {
+    loaded: true;
+    tree: {
+        [fileName: string]: FileTree;
     };
 };
-export type I18nEntry = {
-    loaded: boolean;
-    keys: {
-        [key: string]: I18nEntry | string;
-    };
+type LoadedFileTreeFile = {
+    loaded: true;
+    keys: string[];
+    unsavedChanges: boolean;
+    lang: string;
+    content: I18nData;
 };
+type UnloadedFileTree = {
+    loaded: false;
+};
+
+export type FileTree = (
+    UnloadedFileTree
+    | LoadedFileTreeFolder
+    | LoadedFileTreeFile
+);

@@ -7,10 +7,10 @@ import {ReactComponent as darkModeIcon} from '../assets/extra_icons/dark_mode.sv
 import {ReactComponent as lightModeIcon} from '../assets/extra_icons/light_mode.svg';
 import {ThemeName} from '../themes';
 
-function DarkModeIcon({}) {
+function DarkModeIcon() {
     return <SvgIcon component={darkModeIcon} />;
 }
-function LightModeIcon({}) {
+function LightModeIcon() {
     return <SvgIcon component={lightModeIcon} />;
 }
 interface DrawerContentProps {

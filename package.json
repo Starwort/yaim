@@ -3,7 +3,7 @@
   "homepage": "./",
   "version": "0.0.0",
   "private": false,
-  "main": "electron.js",
+  "main": "electron-prod.js",
   "dependencies": {
     "@material-ui/core": "^4.12.3",
     "@material-ui/icons": "^4.11.2",
@@ -34,8 +34,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "electron": "electron .",
-    "electron-dev": "ELECTRON_START_URL=http://localhost:3000 electron .",
-    "electron-dev-win": "set ELECTRON_START_URL=http://localhost:3000 && electron ."
+    "electron-dev": "electron ./electron-dev.js"
   },
   "eslintConfig": {
     "extends": [

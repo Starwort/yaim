@@ -1,10 +1,18 @@
-import {Drawer, Hidden, ListItem, ListItemIcon, ListItemText, Toolbar, useTheme} from '@material-ui/core';
+import {Drawer, Hidden, ListItem, ListItemIcon, ListItemText, SvgIcon, Toolbar, useTheme} from '@material-ui/core';
 import {Language} from '@material-ui/icons';
-import DarkModeIcon from '@material-ui/icons/Brightness4';
-import LightModeIcon from '@material-ui/icons/Brightness7';
+// import DarkModeIcon from '@material-ui/icons/Brightness4';
+// import LightModeIcon from '@material-ui/icons/Brightness7';
 import {useTranslation} from 'react-i18next';
+import {ReactComponent as darkModeIcon} from '../assets/extra_icons/dark_mode.svg';
+import {ReactComponent as lightModeIcon} from '../assets/extra_icons/light_mode.svg';
 import {ThemeName} from '../themes';
 
+function DarkModeIcon({}) {
+    return <SvgIcon component={darkModeIcon} />;
+}
+function LightModeIcon({}) {
+    return <SvgIcon component={lightModeIcon} />;
+}
 interface DrawerContentProps {
     onSelect?: () => void;
     setTheme: (theme: ThemeName) => void;

@@ -1,6 +1,24 @@
+/* Copyright (c) 2021 Starwort
+ *
+ * This copyright notice may not be removed from this source code file as
+ * all rights are reserved by the original author.
+ *
+ * This file is part of YAIM.
+ *
+ * YAIM is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * YAIM is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with YAIM. If not, see <https://www.gnu.org/licenses/>.
+ */
 import React from "react";
-import {TFunction} from "react-i18next";
-import {numberFormatters} from "./i18n";
 
 export type Dict<V> = {
     [key: string]: V;
@@ -21,7 +39,7 @@ export function getTextWidth(text: string) {
     return div.clientWidth;
 }
 
-export const root = '/nookdata';
+export const root = '/';
 export function getDefault<T>(data: string | undefined, defaultValue: T) {
     if (data !== undefined) {
         return JSON.parse(data) as T;  // todo: figure out how to type-check this
@@ -107,119 +125,6 @@ export function fsum(input: Array<number>) {
         sum = t;
     }
     return sum + c;  // Correction only applied once in the very end.
-}
-
-export const months = [
-    "core:time.month.jan",
-    "core:time.month.feb",
-    "core:time.month.mar",
-    "core:time.month.apr",
-    "core:time.month.may",
-    "core:time.month.jun",
-    "core:time.month.jul",
-    "core:time.month.aug",
-    "core:time.month.sep",
-    "core:time.month.oct",
-    "core:time.month.nov",
-    "core:time.month.dec",
-];
-export const weekdays = [
-    "core:time.weekday.sun",
-    "core:time.weekday.mon",
-    "core:time.weekday.tue",
-    "core:time.weekday.wed",
-    "core:time.weekday.thu",
-    "core:time.weekday.fri",
-    "core:time.weekday.sat",
-];
-interface TimeFormatterSettings {
-    twelveHour: boolean;
-    precision: 'hour' | 'minute' | 'second';
-}
-interface DateFormatterSettings<Time> {
-    longhand: boolean;
-    includeYear: boolean;
-    includeTime: Time;
-}
-
-export function formatTime(
-    date: Date,
-    t: TFunction<"core">,
-    {twelveHour, precision}: TimeFormatterSettings
-): string {
-    const formatter = numberFormatters[t('core:misc.code')];
-    if (twelveHour) {
-        let hour = date.getHours() % 12;
-        if (hour == 0) {
-            hour = 12;
-        }
-        return t(
-            `core:time.twelve_hour.${(
-                date.getHours() < 12 ? 'am' : 'pm'
-            )}`,
-            {
-                time: t(
-                    `core:time.precision.${precision}`,
-                    {
-                        hour: formatter(hour),
-                        minute: formatter(date.getMinutes()).padStart(2, '0'),
-                        second: formatter(date.getSeconds()).padStart(2, '0'),
-                    },
-                ),
-            },
-        );
-    } else {
-        let minute = date.getMinutes();
-        if (precision == 'hour') {
-            precision = 'minute';
-            minute = 0;
-        }
-        return t(
-            `core:time.precision.${precision}`,
-            {
-                hour: formatter(date.getHours()).padStart(2, '0'),
-                minute: formatter(minute).padStart(2, '0'),
-                second: formatter(date.getSeconds()).padStart(2, '0'),
-            },
-        );
-    }
-}
-
-export function formatDate(
-    date: Date,
-    t: TFunction<"core">,
-    {longhand, includeYear, includeTime}: DateFormatterSettings<true>,
-    timeFormatterSettings: TimeFormatterSettings,
-): string;
-export function formatDate(
-    date: Date,
-    t: TFunction<"core">,
-    {longhand, includeYear, includeTime}: DateFormatterSettings<false>,
-): string;
-export function formatDate(
-    date: Date,
-    t: TFunction<"core">,
-    {longhand, includeYear, includeTime}: DateFormatterSettings<boolean>,
-    timeFormatterSettings?: TimeFormatterSettings,
-): string {
-    return t(
-        `core:time.date.${(
-            longhand ? 'long' : 'short'
-        )}.${(
-            includeYear ? 'full' : 'short'
-        )}${(
-            includeTime ? '_with_time' : ''
-        )}`,
-        {
-            year: date.getFullYear(),
-            shortYear: (date.getFullYear() % 100).toString().padStart(2, '0'),
-            month: date.getMonth(),
-            monthName: t(months[date.getMonth()] + '.long'),
-            day: date.getDate(),
-            weekday: t(weekdays[date.getDay()] + '.long'),
-            time: includeTime ? formatTime(date, t, timeFormatterSettings!) : '',
-        }
-    );
 }
 export function useRerender() {
     const [, setTick] = React.useState(0);

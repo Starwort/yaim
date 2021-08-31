@@ -51,42 +51,10 @@ Array.prototype.count = function (elem) {
     return this.filter(item => item === elem).length;
 };
 
-declare module "react" {
-    interface CSSProperties {
-        '--progress'?: string | number;
-    }
-}
-
 declare module "@material-ui/core/styles/createTheme" {
     interface Theme {
         name: ThemeName;
     }
 }
 
-declare module "@material-ui/core/styles/createPalette" {
-    interface ElevationColourValue {
-        main: string;
-    }
-
-    interface ElevationColour {
-        0: ElevationColourValue;
-        1: ElevationColourValue;
-        2: ElevationColourValue;
-        3: ElevationColourValue;
-        4: ElevationColourValue;
-        6: ElevationColourValue;
-        8: ElevationColourValue;
-        12: ElevationColourValue;
-        16: ElevationColourValue;
-        24: ElevationColourValue;
-    }
-    interface Palette {
-        elevations: ElevationColour;
-        opacity: number;
-    }
-    interface PaletteOptions {
-        elevations: ElevationColour;
-        opacity: number;
-    }
-}
 export {};

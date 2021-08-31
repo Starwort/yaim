@@ -20,13 +20,16 @@
  */
 import {Suspense} from 'react';
 import ReactDOM from 'react-dom';
+import {MemoryRouter} from 'react-router-dom';
 import App from './App';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
 
 ReactDOM.render(
     <Suspense fallback={<div>Loading...</div>}>
-        <App />
+        <MemoryRouter>
+            <App />
+        </MemoryRouter>
     </Suspense>,
     document.getElementById('root')
 );

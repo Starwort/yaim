@@ -18,9 +18,11 @@
  * You should have received a copy of the GNU General Public License
  * along with YAIM. If not, see <https://www.gnu.org/licenses/>.
  */
-import {CssBaseline, ThemeProvider, Typography} from "@material-ui/core";
+import {CssBaseline, ThemeProvider} from "@material-ui/core";
 import {useMemo, useState} from "react";
-import {AppFrame, Centred} from "./components";
+import {Route} from "react-router-dom";
+import {AppFrame} from "./components";
+import {I18nRoot} from "./misc";
 import getTheme, {ThemeName} from "./themes";
 
 export type Settings = {
@@ -49,15 +51,14 @@ function App() {
         () => getTheme(settings.theme),
         [settings]
     );
+    const [i18nData, setI18nData] = useState<I18nRoot>({loaded: false});
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline />
-            <AppFrame fileTree={<>...</>} setTheme={setTheme}>
-                <Centred>
-                    <Typography>
-                        Hello world!!
-                    </Typography>
-                </Centred>
+            <AppFrame i18nData={i18nData} setI18nData={setI18nData} setTheme={setTheme}>
+                <Route path="/core">
+                    hi
+                </Route>
             </AppFrame>
         </ThemeProvider>
     );

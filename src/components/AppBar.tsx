@@ -33,7 +33,7 @@ const {ipcRenderer} = window.require('electron');
 interface AppBarProps {
     setDrawerOpen: (value: boolean) => void;
     drawerOpen: boolean;
-    title: React.ReactNode;
+    title: string;
 }
 
 export function AppBar({setDrawerOpen, drawerOpen, title}: AppBarProps) {

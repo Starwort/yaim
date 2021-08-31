@@ -18,20 +18,23 @@
  * You should have received a copy of the GNU General Public License
  * along with YAIM. If not, see <https://www.gnu.org/licenses/>.
  */
-import {Typography, useMediaQuery, useTheme} from '@material-ui/core';
+import {useMediaQuery, useTheme} from '@material-ui/core';
 import React from 'react';
 import {useTranslation} from 'react-i18next';
 import {AppBar, DrawerAdjust, NavigationDrawer} from '.';
+import {I18nRoot} from '../misc';
 import {ThemeName} from '../themes';
+import {FileTree} from './FileTree';
 import {LanguageDialogue} from './LanguageDialogue';
 
 
 interface AppFrameProps {
     setTheme: (value: ThemeName) => void;
     children: React.ReactNode;
-    fileTree: React.ReactNode;
+    i18nData: I18nRoot;
+    setI18nData: (value: I18nRoot) => void;
 }
-export function AppFrame(props: AppFrameProps) {
+export function AppFrame({setTheme, children, i18nData, setI18nData}: AppFrameProps) {
     const theme = useTheme();
     const startOpen = useMediaQuery(theme.breakpoints.up('lg'));
     const [drawerOpen, setDrawerOpen] = React.useState(false);
@@ -46,25 +49,23 @@ export function AppFrame(props: AppFrameProps) {
                 setDrawerOpen={setDrawerOpen}
                 drawerOpen={drawerOpen}
                 title={
-                    <Typography variant="h6">
-                        {t('core:title')}
-                    </Typography>
+                    t('core:title')
                 }
             />
             <NavigationDrawer
                 open={drawerOpen}
                 setOpen={setDrawerOpen}
-                setTheme={props.setTheme}
+                setTheme={setTheme}
                 setLangOpen={setLangOpen}
             >
-                {props.fileTree}
+                <FileTree i18nData={i18nData} setI18nData={setI18nData} />
             </NavigationDrawer>
             <LanguageDialogue open={langOpen} setLang={(value: string) => {
                 i18n.changeLanguage(value);
                 setLangOpen(false);
             }} />
             <DrawerAdjust active={drawerOpen}>
-                {props.children}
+                {children}
             </DrawerAdjust>
         </>
     );

@@ -134,29 +134,43 @@ export function useRerender() {
     return update;
 }
 
+export type LoadedI18nRoot = {
+    loaded: true;
+    unsaved: boolean;
+    langs: string[];
+    keys: Namespaces;
+    data: Record<string, Namespaces>;
+};
+type UnloadedI18nRoot = {
+    loaded: false;
+};
+export type I18nRoot = LoadedI18nRoot | UnloadedI18nRoot;
+
+export type Namespaces = Record<string, I18nData>;
+
 export type I18nData = {
     [key: string]: string | I18nData;
 };
 
-type LoadedFileTreeFolder = {
-    loaded: true;
-    tree: {
-        [fileName: string]: FileTree;
-    };
-};
-type LoadedFileTreeFile = {
-    loaded: true;
-    keys: string[];
-    unsavedChanges: boolean;
-    lang: string;
-    content: I18nData;
-};
-type UnloadedFileTree = {
-    loaded: false;
-};
+// type LoadedFileTreeFolder = {
+//     loaded: true;
+//     tree: {
+//         [fileName: string]: FileTree;
+//     };
+// };
+// type LoadedFileTreeFile = {
+//     loaded: true;
+//     keys: string[];
+//     unsavedChanges: boolean;
+//     lang: string;
+//     content: I18nData;
+// };
+// type UnloadedFileTree = {
+//     loaded: false;
+// };
 
-export type FileTree = (
-    UnloadedFileTree
-    | LoadedFileTreeFolder
-    | LoadedFileTreeFile
-);
+// export type FileTree = (
+//     UnloadedFileTree
+//     | LoadedFileTreeFolder
+//     | LoadedFileTreeFile
+// );

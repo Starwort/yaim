@@ -19,7 +19,7 @@
  * along with YAIM. If not, see <https://www.gnu.org/licenses/>.
  */
 import {ListItem, ListItemIcon, ListItemText} from "@material-ui/core";
-import {Add, Folder} from "@material-ui/icons";
+import {Add, Folder, Save} from "@material-ui/icons";
 import {useCallback} from "react";
 import {Link, useLocation} from 'react-router-dom';
 import type {I18nRoot, LoadedI18nRoot, Namespaces} from "../misc";
@@ -68,6 +68,49 @@ async function loadI18nData(): Promise<I18nRoot> {
     return data;
 }
 
+async function saveData(i18nData: LoadedI18nRoot, setI18nData: (i18nData: I18nRoot) => void) {
+    let dir: FileSystemDirectoryHandle;
+    try {
+        dir = await window.showDirectoryPicker();
+        if (await dir.queryPermission({mode: 'readwrite'}) !== 'granted') {
+            if (await dir.requestPermission({mode: 'readwrite'}) !== 'granted') {
+                console.warn('Could not save as permission was denied!');
+                alert('There were problems saving the data. Please check the console (Ctrl+Shift+I) for more information');
+                return;
+            }
+        }
+    } catch {
+        return;
+    }
+    let hadProblems = false;
+    for (let lang in i18nData.data) {
+        let langDir: FileSystemDirectoryHandle;
+        try {
+            langDir = await dir.getDirectoryHandle(lang, {create: true});
+        } catch (error) {
+            console.warn(`Failed to save language ${lang}: ${error}`);
+            hadProblems = true;
+            continue;
+        }
+        for (let [ns, data] of Object.entries(i18nData.data[lang])) {
+            try {
+                let file = await langDir.getFileHandle(`${ns}.json`, {create: true});
+                let writeableStream = await file.createWritable();
+                await writeableStream.write(JSON.stringify(data));
+                await writeableStream.close();
+            } catch (error) {
+                console.warn(`Failed to save language ${lang} namespace ${ns}: ${error}`);
+                hadProblems = true;
+            }
+        }
+    }
+    if (hadProblems) {
+        alert('There were problems saving the data. Please check the console (Ctrl+Shift+I) for more information');
+    } else {
+        setI18nData({...i18nData, unsaved: true});
+    }
+}
+
 interface FileTreeProps {
     i18nData: I18nRoot;
     setI18nData: (value: I18nRoot) => void;
@@ -75,7 +118,7 @@ interface FileTreeProps {
 export function FileTree({i18nData, setI18nData}: FileTreeProps) {
     const createNamespace = useCallback(
         () => {
-            const loadedI18nData = {...i18nData} as LoadedI18nRoot;
+            const loadedI18nData = {...i18nData, unsaved: true} as LoadedI18nRoot;
             let newNS = 'new_namespace';
             if (newNS in loadedI18nData.keys) {
                 for (let i = 0; ; i++) {
@@ -121,5 +164,13 @@ export function FileTree({i18nData, setI18nData}: FileTreeProps) {
                 Create namespace
             </ListItemText>
         </ListItem>
+        {i18nData.unsaved && <ListItem button onClick={() => saveData(i18nData, setI18nData)}>
+            <ListItemIcon>
+                <Save />
+            </ListItemIcon>
+            <ListItemText>
+                Save project
+            </ListItemText>
+        </ListItem>}
     </>;
 }

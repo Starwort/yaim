@@ -1,5 +1,5 @@
-import {Button, Card, CardContent, Grid, IconButton, InputAdornment, List, TextField} from "@material-ui/core";
-import {DeleteForever, Done} from "@material-ui/icons";
+import {Button, Card, CardContent, Dialog as Dialogue, DialogActions as DialogueActions, DialogContent as DialogueContent, DialogTitle as DialogueTitle, Grid, IconButton, InputAdornment, List, ListItem, ListItemIcon, ListItemText, TextField} from "@material-ui/core";
+import {Add, DeleteForever, Done} from "@material-ui/icons";
 import {useEffect, useState} from "react";
 import {useHistory, useParams} from "react-router-dom";
 import {I18nRoot, LoadedI18nRoot} from "../misc";
@@ -14,6 +14,16 @@ export default function NamespaceContent({i18nData, setI18nData}: NamespaceConte
     const {namespace} = useParams<{namespace: string;}>();
     const history = useHistory();
     const [newName, setNewName] = useState(namespace);
+    const [dialogueOpen, setDialogueOpen] = useState(false);
+    const [newKey, setNewKey] = useState('my.fancy.new.key');
+    let newKeyIsValid = true, keyError: string | undefined;
+    if (newKey === '') {
+        newKeyIsValid = false;
+        keyError = 'Key cannot be empty';
+    } else if (i18nData.masterKeys[namespace].filter(item => item.startsWith(newKey)).length) {
+        newKeyIsValid = false;
+        keyError = 'Key exists or is a group';
+    }
     const nsExists = namespace !== newName && i18nData.namespaces.includes(newName);
     useEffect(
         () => setNewName(namespace),
@@ -94,7 +104,59 @@ export default function NamespaceContent({i18nData, setI18nData}: NamespaceConte
                         namespace={namespace}
                     />
                 )}
+                <ListItem button onClick={() => setDialogueOpen(true)}>
+                    <ListItemIcon>
+                        <Add />
+                    </ListItemIcon>
+                    <ListItemText>
+                        Add new key
+                    </ListItemText>
+                </ListItem>
             </List>
         </Card>
+        <Dialogue
+            open={dialogueOpen}
+            onClose={() => setDialogueOpen(false)}
+            maxWidth="sm"
+            fullWidth
+        >
+            <DialogueTitle>Add language</DialogueTitle>
+            <DialogueContent>
+                <TextField
+                    autoFocus
+                    label="Language code"
+                    error={!newKeyIsValid}
+                    helperText={keyError ?? "The new key, consisting of parts separated by dots (.)"}
+                    fullWidth
+                    value={newKey}
+                    onChange={(event) => setNewKey(event.target.value)}
+                />
+            </DialogueContent>
+            <DialogueActions>
+                <Button onClick={() => {
+                    setDialogueOpen(false);
+                    setNewKey('my.fancy.new.key');
+                }}>
+                    Cancel
+                </Button>
+                <Button
+                    onClick={() => {
+                        setDialogueOpen(false);
+                        setI18nData({
+                            ...i18nData,
+                            masterKeys: {
+                                ...i18nData.masterKeys,
+                                [namespace]: [...i18nData.masterKeys[namespace], newKey],
+                            },
+                            unsaved: true,
+                        });
+                        setNewKey('my.fancy.new.key');
+                    }}
+                    disabled={!newKeyIsValid}
+                >
+                    Add
+                </Button>
+            </DialogueActions>
+        </Dialogue>
     </>;
 }

@@ -21,7 +21,8 @@
 import {CssBaseline, ThemeProvider} from "@material-ui/core";
 import {useMemo, useState} from "react";
 import {Route, Switch} from "react-router-dom";
-import {AppFrame, Centred} from "./components";
+import {AppFrame} from "./components/AppFrame";
+import {Centred} from "./components/Centred";
 import NamespaceContent from "./components/NamespaceContent";
 import ProjectSettings from "./components/ProjectSettings";
 import {I18nRoot} from "./misc";

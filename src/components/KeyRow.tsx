@@ -1,7 +1,8 @@
-import {Box, Collapse, Grid, ListItem, ListItemIcon, ListItemText, TextField} from "@material-ui/core";
-import {ExpandLess, ExpandMore, Translate} from "@material-ui/icons";
+import {Box, Button, Collapse, Grid, ListItem, ListItemIcon, ListItemText, TextField} from "@material-ui/core";
+import {DeleteForever, ExpandLess, ExpandMore, Translate} from "@material-ui/icons";
 import {useState} from "react";
 import {I18nRoot, LoadedI18nRoot} from "../misc";
+import {Centred} from "./Centred";
 
 interface KeyRowProps {
     i18nData: LoadedI18nRoot;
@@ -52,6 +53,23 @@ export default function KeyRow({i18nData, setI18nData, transKey, namespace}: Key
                             />
                         </Grid>
                     )}
+                    <Grid item xs={12} sm={6} md={4} lg={3}>
+                        <Centred>
+                            <Button
+                                startIcon={<DeleteForever />}
+                                onClick={() => setI18nData({
+                                    ...i18nData,
+                                    masterKeys: {
+                                        ...i18nData.masterKeys,
+                                        [namespace]: i18nData.masterKeys[namespace].filter(key => key !== transKey),
+                                    },
+                                    unsaved: true,
+                                })}
+                            >
+                                Delete key
+                            </Button>
+                        </Centred>
+                    </Grid>
                 </Grid>
             </Box>
         </Collapse>

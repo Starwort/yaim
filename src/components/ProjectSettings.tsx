@@ -139,6 +139,7 @@ export default function ProjectSettings({i18nData, setI18nData}: ProjectSettings
                                 ...i18nData.langs,
                                 newLangCode,
                             ],
+                            unsaved: true,
                         });
                         setNewLangCode('new-lang');
                     }}

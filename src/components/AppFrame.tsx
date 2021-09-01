@@ -21,11 +21,13 @@
 import {useMediaQuery, useTheme} from '@material-ui/core';
 import React from 'react';
 import {useTranslation} from 'react-i18next';
-import {AppBar, DrawerAdjust, NavigationDrawer} from '.';
 import {I18nRoot} from '../misc';
 import {ThemeName} from '../themes';
+import {AppBar} from './AppBar';
+import {DrawerAdjust} from './DrawerAdjust';
 import {FileTree} from './FileTree';
 import {LanguageDialogue} from './LanguageDialogue';
+import {NavigationDrawer} from './NavigationDrawer';
 
 
 interface AppFrameProps {

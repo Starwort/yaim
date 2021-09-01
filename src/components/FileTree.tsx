@@ -48,7 +48,7 @@ function flatten(data: NestedI18nData): FlatI18nData {
     }
     return rv;
 }
-function unFlatten(data: FlatI18nData): NestedI18nData {
+export function unFlatten(data: FlatI18nData): NestedI18nData {
     let rv: NestedI18nData = {};
     for (let [key, value] of Object.entries(data)) {
         let dest = rv;
@@ -134,7 +134,11 @@ async function saveData(i18nData: LoadedI18nRoot, setI18nData: (i18nData: I18nRo
             continue;
         }
         for (let ns of i18nData.namespaces) {
-            let data = i18nData.data[lang][ns];
+            let data = Object.fromEntries(
+                Object.entries(i18nData.data[lang][ns]).filter(
+                    ([key, value]) => (i18nData.masterKeys[ns].includes(key) && value)
+                )
+            );
             try {
                 let file = await langDir.getFileHandle(`${ns}.json`, {create: true});
                 let writeableStream = await file.createWritable();

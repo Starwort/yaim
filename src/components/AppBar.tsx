@@ -21,6 +21,7 @@
 import {AppBar as TopAppBar, IconButton, SvgIcon, Toolbar, Typography} from '@material-ui/core';
 import {Close, Maximize, Minimize} from '@material-ui/icons';
 import MenuIcon from '@material-ui/icons/Menu';
+import isElectron from 'is-electron';
 import React from 'react';
 import {ReactComponent as unmaximiseIcon} from '../assets/extra_icons/unmaximise.svg';
 
@@ -28,7 +29,7 @@ function Unmaximise() {
     return <SvgIcon component={unmaximiseIcon} />;
 }
 
-const {ipcRenderer} = window.require('electron');
+const {ipcRenderer} = isElectron() ? window.require('electron') : {ipcRenderer: undefined};
 
 interface AppBarProps {
     setDrawerOpen: (value: boolean) => void;
@@ -38,8 +39,10 @@ interface AppBarProps {
 
 export function AppBar({setDrawerOpen, drawerOpen, title}: AppBarProps) {
     const [maximised, setMaximised] = React.useState(true);
-    ipcRenderer.on('maximise', () => setMaximised(true));
-    ipcRenderer.on('unmaximise', () => setMaximised(false));
+    if (isElectron()) {
+        ipcRenderer.on('maximise', () => setMaximised(true));
+        ipcRenderer.on('unmaximise', () => setMaximised(false));
+    }
     return (
         <>
             <TopAppBar position="fixed" className="drag">
@@ -58,44 +61,46 @@ export function AppBar({setDrawerOpen, drawerOpen, title}: AppBarProps) {
                         {title}
                     </Typography>
                     <div style={{flexGrow: 1}} />
-                    <IconButton
-                        className="no-drag"
-                        edge="end"
-                        color="inherit"
-                        aria-label="minimise"
-                        onClick={() => ipcRenderer.send('minimise')}
-                    >
-                        <Minimize />
-                    </IconButton>
-                    {maximised ?
+                    {isElectron() && <>
                         <IconButton
                             className="no-drag"
                             edge="end"
                             color="inherit"
-                            aria-label="unmaximise"
-                            onClick={() => {setMaximised(false); ipcRenderer.send('unmaximise');}}
+                            aria-label="minimise"
+                            onClick={() => ipcRenderer.send('minimise')}
                         >
-                            <Unmaximise />
+                            <Minimize />
                         </IconButton>
-                        : <IconButton
+                        {maximised ?
+                            <IconButton
+                                className="no-drag"
+                                edge="end"
+                                color="inherit"
+                                aria-label="unmaximise"
+                                onClick={() => {setMaximised(false); ipcRenderer.send('unmaximise');}}
+                            >
+                                <Unmaximise />
+                            </IconButton>
+                            : <IconButton
+                                className="no-drag"
+                                edge="end"
+                                color="inherit"
+                                aria-label="maximise"
+                                onClick={() => {setMaximised(true); ipcRenderer.send('maximise');}}
+                            >
+                                <Maximize />
+                            </IconButton>
+                        }
+                        <IconButton
                             className="no-drag"
                             edge="end"
                             color="inherit"
-                            aria-label="maximise"
-                            onClick={() => {setMaximised(true); ipcRenderer.send('maximise');}}
+                            aria-label="close"
+                            onClick={() => ipcRenderer.send('close')}
                         >
-                            <Maximize />
+                            <Close />
                         </IconButton>
-                    }
-                    <IconButton
-                        className="no-drag"
-                        edge="end"
-                        color="inherit"
-                        aria-label="close"
-                        onClick={() => ipcRenderer.send('close')}
-                    >
-                        <Close />
-                    </IconButton>
+                    </>}
                 </Toolbar>
             </TopAppBar>
             <Toolbar />

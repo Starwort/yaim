@@ -20,8 +20,10 @@
  */
 import {CssBaseline, ThemeProvider} from "@material-ui/core";
 import {useMemo, useState} from "react";
-import {Route} from "react-router-dom";
-import {AppFrame} from "./components";
+import {Route, Switch} from "react-router-dom";
+import {AppFrame, Centred} from "./components";
+import NamespaceContent from "./components/NamespaceContent";
+import ProjectSettings from "./components/ProjectSettings";
 import {I18nRoot} from "./misc";
 import getTheme, {ThemeName} from "./themes";
 
@@ -56,9 +58,18 @@ function App() {
         <ThemeProvider theme={theme}>
             <CssBaseline />
             <AppFrame i18nData={i18nData} setI18nData={setI18nData} setTheme={setTheme}>
-                <Route path="/core">
-                    hi
-                </Route>
+                {i18nData.loaded && <Centred>
+                    <div style={{width: '75%', marginTop: 16}}>
+                        <Switch>
+                            <Route path='/' exact>
+                                <ProjectSettings i18nData={i18nData} setI18nData={setI18nData} />
+                            </Route>
+                            <Route path='/:namespace'>
+                                <NamespaceContent i18nData={i18nData} setI18nData={setI18nData} />
+                            </Route>
+                        </Switch>
+                    </div>
+                </Centred>}
             </AppFrame>
         </ThemeProvider>
     );

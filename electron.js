@@ -1,6 +1,6 @@
 // Modules to control application life and create native browser window
 const {app, BrowserWindow, ipcMain} = require('electron');
-// const fs = require('fs');
+const fs = require('fs/promises');
 
 let mainWindow;
 

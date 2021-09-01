@@ -19,10 +19,10 @@
  * along with YAIM. If not, see <https://www.gnu.org/licenses/>.
  */
 import {ListItem, ListItemIcon, ListItemText} from "@material-ui/core";
-import {Add, Folder, Save} from "@material-ui/icons";
+import {Add, Folder, Save, Settings} from "@material-ui/icons";
 import {useCallback} from "react";
 import {Link, useLocation} from 'react-router-dom';
-import type {I18nRoot, LoadedI18nRoot, Namespaces} from "../misc";
+import type {FlatI18nData, I18nRoot, LoadedI18nRoot, Namespaces, NestedI18nData} from "../misc";
 
 async function extractData(directory: FileSystemDirectoryHandle): Promise<Namespaces> {
     let rv: Namespaces = {};
@@ -30,7 +30,35 @@ async function extractData(directory: FileSystemDirectoryHandle): Promise<Namesp
         if (handle.kind !== 'file') {
             continue;
         }
-        rv[namespace.replace(/\.json$/, '')] = JSON.parse(await (await handle.getFile()).text());
+        rv[namespace.replace(/\.json$/, '')] = flatten(JSON.parse(await (await handle.getFile()).text()));
+    }
+    return rv;
+}
+
+function flatten(data: NestedI18nData): FlatI18nData {
+    let rv: FlatI18nData = {};
+    for (let [key, values] of Object.entries(data)) {
+        if (typeof values === 'string') {
+            rv[key] = values;
+        } else {
+            for (let [innerKey, value] of Object.entries(flatten(values))) {
+                rv[`${key}.${innerKey}`] = value;
+            }
+        }
+    }
+    return rv;
+}
+function unFlatten(data: FlatI18nData): NestedI18nData {
+    let rv: NestedI18nData = {};
+    for (let [key, value] of Object.entries(data)) {
+        let dest = rv;
+        for (let part of key.split('.').slice(0, -1)) {
+            if (!(part in dest)) {
+                dest[part] = {};
+            }
+            dest = dest[part] as NestedI18nData;
+        }
+        dest[key.split('.').at(-1)] = value;
     }
     return rv;
 }
@@ -47,23 +75,36 @@ async function loadI18nData(): Promise<I18nRoot> {
     let data: LoadedI18nRoot = {
         loaded: true,
         data: {},
-        keys: {},
+        master: 'en',
+        masterKeys: {},
+        namespaces: [],
         langs: [],
         unsaved: false,
     };
-    let master: FileSystemDirectoryHandle | undefined;
+    let master: string | undefined;
     for await (let [name, contents] of dir.entries()) {
         if (contents.kind !== 'directory') {
             continue;
         }
         if (master === undefined) {
-            master = contents;
+            master = name;
         }
         data.langs.push(name);
         data.data[name] = await extractData(contents);
     }
     if (master !== undefined) {
-        data.keys = await extractData(master);
+        data.namespaces = Object.keys(data.data[master]);
+        data.master = master;
+        data.masterKeys = Object.fromEntries(
+            Object.entries(data.data[master]).map(
+                ([name, data]) => ([name, Object.keys(data)])
+            )
+        );
+        for (let lang of data.langs) {
+            for (let namespace of data.namespaces) {
+                data.data[lang][namespace] = data.data[lang][namespace] ?? {};
+            }
+        }
     }
     return data;
 }
@@ -83,7 +124,7 @@ async function saveData(i18nData: LoadedI18nRoot, setI18nData: (i18nData: I18nRo
         return;
     }
     let hadProblems = false;
-    for (let lang in i18nData.data) {
+    for (let lang of i18nData.langs) {
         let langDir: FileSystemDirectoryHandle;
         try {
             langDir = await dir.getDirectoryHandle(lang, {create: true});
@@ -92,11 +133,12 @@ async function saveData(i18nData: LoadedI18nRoot, setI18nData: (i18nData: I18nRo
             hadProblems = true;
             continue;
         }
-        for (let [ns, data] of Object.entries(i18nData.data[lang])) {
+        for (let ns of i18nData.namespaces) {
+            let data = i18nData.data[lang][ns];
             try {
                 let file = await langDir.getFileHandle(`${ns}.json`, {create: true});
                 let writeableStream = await file.createWritable();
-                await writeableStream.write(JSON.stringify(data));
+                await writeableStream.write(JSON.stringify(unFlatten(data)));
                 await writeableStream.close();
             } catch (error) {
                 console.warn(`Failed to save language ${lang} namespace ${ns}: ${error}`);
@@ -107,7 +149,7 @@ async function saveData(i18nData: LoadedI18nRoot, setI18nData: (i18nData: I18nRo
     if (hadProblems) {
         alert('There were problems saving the data. Please check the console (Ctrl+Shift+I) for more information');
     } else {
-        setI18nData({...i18nData, unsaved: true});
+        setI18nData({...i18nData, unsaved: false});
     }
 }
 
@@ -120,15 +162,18 @@ export function FileTree({i18nData, setI18nData}: FileTreeProps) {
         () => {
             const loadedI18nData = {...i18nData, unsaved: true} as LoadedI18nRoot;
             let newNS = 'new_namespace';
-            if (newNS in loadedI18nData.keys) {
+            if (newNS in loadedI18nData.namespaces) {
                 for (let i = 0; ; i++) {
-                    if (!(`${newNS}_${i}` in loadedI18nData.keys)) {
+                    if (!(`${newNS}_${i}` in loadedI18nData.namespaces)) {
                         newNS = `${newNS}_${i}`;
                         break;
                     }
                 }
             }
-            loadedI18nData.keys[newNS] = {};
+            loadedI18nData.namespaces.push(newNS);
+            for (let lang of loadedI18nData.langs) {
+                loadedI18nData.data[lang][newNS] = {};
+            }
             setI18nData(loadedI18nData);
         },
         [i18nData, setI18nData],
@@ -142,7 +187,20 @@ export function FileTree({i18nData, setI18nData}: FileTreeProps) {
         </ListItem>;
     }
     return <>
-        {Object.keys(i18nData.keys).map(namespace => <ListItem
+        <ListItem
+            button
+            component={Link}
+            to='/'
+            selected={!loaded}
+        >
+            <ListItemIcon>
+                <Settings />
+            </ListItemIcon>
+            <ListItemText>
+                Project settings
+            </ListItemText>
+        </ListItem>
+        {i18nData.namespaces.map(namespace => <ListItem
             button
             component={Link}
             key={namespace}

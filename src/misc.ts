@@ -138,7 +138,9 @@ export type LoadedI18nRoot = {
     loaded: true;
     unsaved: boolean;
     langs: string[];
-    keys: Namespaces;
+    master: string;
+    masterKeys: Record<string, string[]>;
+    namespaces: string[];
     data: Record<string, Namespaces>;
 };
 type UnloadedI18nRoot = {
@@ -146,10 +148,11 @@ type UnloadedI18nRoot = {
 };
 export type I18nRoot = LoadedI18nRoot | UnloadedI18nRoot;
 
-export type Namespaces = Record<string, I18nData>;
+export type Namespaces = Record<string, FlatI18nData>;
 
-export type I18nData = {
-    [key: string]: string | I18nData;
+export type FlatI18nData = Record<string, string>;
+export type NestedI18nData = {
+    [key: string]: NestedI18nData | string;
 };
 
 // type LoadedFileTreeFolder = {

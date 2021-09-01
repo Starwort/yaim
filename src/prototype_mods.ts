@@ -28,6 +28,7 @@ declare global {
         rotated: (by: number) => Array<T>;
         rotate: (by: number) => Array<T>;
         count: (elem: T) => number;
+        at: (pos: number) => T;
     }
 }
 // eslint-disable-next-line no-extend-native

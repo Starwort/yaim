@@ -20,9 +20,13 @@
  */
 import {ListItem, ListItemIcon, ListItemText} from "@material-ui/core";
 import {Add, Folder, Save, Settings} from "@material-ui/icons";
+import i18n from 'i18next';
 import {useCallback} from "react";
+import {useTranslation} from "react-i18next";
 import {Link, useLocation} from 'react-router-dom';
 import type {FlatI18nData, I18nRoot, LoadedI18nRoot, Namespaces, NestedI18nData} from "../misc";
+
+const {t} = i18n;
 
 async function extractData(directory: FileSystemDirectoryHandle): Promise<Namespaces> {
     let rv: Namespaces = {};
@@ -115,8 +119,8 @@ async function saveData(i18nData: LoadedI18nRoot, setI18nData: (i18nData: I18nRo
         dir = await window.showDirectoryPicker();
         if (await dir.queryPermission({mode: 'readwrite'}) !== 'granted') {
             if (await dir.requestPermission({mode: 'readwrite'}) !== 'granted') {
-                console.warn('Could not save as permission was denied!');
-                alert('There were problems saving the data. Please check the console (Ctrl+Shift+I) for more information');
+                console.warn(t('core:save.warn.no_permission'));
+                alert(t('core:save.warn.alert'));
                 return;
             }
         }
@@ -129,7 +133,7 @@ async function saveData(i18nData: LoadedI18nRoot, setI18nData: (i18nData: I18nRo
         try {
             langDir = await dir.getDirectoryHandle(lang, {create: true});
         } catch (error) {
-            console.warn(`Failed to save language ${lang}: ${error}`);
+            console.warn(t('core:save.warn.language_fail', {lang, error}));
             hadProblems = true;
             continue;
         }
@@ -145,13 +149,13 @@ async function saveData(i18nData: LoadedI18nRoot, setI18nData: (i18nData: I18nRo
                 await writeableStream.write(JSON.stringify(unFlatten(data)));
                 await writeableStream.close();
             } catch (error) {
-                console.warn(`Failed to save language ${lang} namespace ${ns}: ${error}`);
+                console.warn(t('core:save.warn.namespace_fail', {lang, ns, error}));
                 hadProblems = true;
             }
         }
     }
     if (hadProblems) {
-        alert('There were problems saving the data. Please check the console (Ctrl+Shift+I) for more information');
+        alert(t('core:save.warn.alert'));
     } else {
         setI18nData({...i18nData, unsaved: false});
     }
@@ -162,10 +166,11 @@ interface FileTreeProps {
     setI18nData: (value: I18nRoot) => void;
 }
 export function FileTree({i18nData, setI18nData}: FileTreeProps) {
+    const {t} = useTranslation('core');
     const createNamespace = useCallback(
         () => {
             const loadedI18nData = {...i18nData, unsaved: true} as LoadedI18nRoot;
-            let newNS = 'new_namespace';
+            let newNS = t('core:new.namespace');
             if (newNS in loadedI18nData.namespaces) {
                 for (let i = 0; ; i++) {
                     if (!(`${newNS}_${i}` in loadedI18nData.namespaces)) {
@@ -185,9 +190,12 @@ export function FileTree({i18nData, setI18nData}: FileTreeProps) {
     const {pathname} = useLocation();
     const loaded = pathname.replace(/^\//, '');
     if (!i18nData.loaded) {
-        return <ListItem button onClick={async () => setI18nData(await loadI18nData())}>
+        return <ListItem
+            button
+            onClick={async () => setI18nData(await loadI18nData())}
+        >
             <ListItemIcon><Add /></ListItemIcon>
-            <ListItemText>Load data</ListItemText>
+            <ListItemText>{t('core:sidebar.load_data')}</ListItemText>
         </ListItem>;
     }
     return <>
@@ -201,7 +209,7 @@ export function FileTree({i18nData, setI18nData}: FileTreeProps) {
                 <Settings />
             </ListItemIcon>
             <ListItemText>
-                Project settings
+                {t('core:sidebar.project_settings')}
             </ListItemText>
         </ListItem>
         {i18nData.namespaces.map(namespace => <ListItem
@@ -223,7 +231,7 @@ export function FileTree({i18nData, setI18nData}: FileTreeProps) {
                 <Add />
             </ListItemIcon>
             <ListItemText>
-                Create namespace
+                {t('core:sidebar.create_namespace')}
             </ListItemText>
         </ListItem>
         {i18nData.unsaved && <ListItem button onClick={() => saveData(i18nData, setI18nData)}>
@@ -231,7 +239,7 @@ export function FileTree({i18nData, setI18nData}: FileTreeProps) {
                 <Save />
             </ListItemIcon>
             <ListItemText>
-                Save project
+                {t('core:sidebar.save_project')}
             </ListItemText>
         </ListItem>}
     </>;

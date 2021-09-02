@@ -18,7 +18,7 @@
  * You should have received a copy of the GNU General Public License
  * along with YAIM. If not, see <https://www.gnu.org/licenses/>.
  */
-import {CssBaseline, ThemeProvider} from "@material-ui/core";
+import {Box, CssBaseline, ThemeProvider} from "@material-ui/core";
 import {useMemo, useState} from "react";
 import {Route, Switch} from "react-router-dom";
 import {AppFrame} from "./components/AppFrame";
@@ -60,7 +60,7 @@ function App() {
             <CssBaseline />
             <AppFrame i18nData={i18nData} setI18nData={setI18nData} setTheme={setTheme}>
                 {i18nData.loaded && <Centred>
-                    <div style={{width: '75%', marginTop: 16}}>
+                    <Box width='75%' p={2}>
                         <Switch>
                             <Route path='/' exact>
                                 <ProjectSettings i18nData={i18nData} setI18nData={setI18nData} />
@@ -69,7 +69,7 @@ function App() {
                                 <NamespaceContent i18nData={i18nData} setI18nData={setI18nData} />
                             </Route>
                         </Switch>
-                    </div>
+                    </Box>
                 </Centred>}
             </AppFrame>
         </ThemeProvider>

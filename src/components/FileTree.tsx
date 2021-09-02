@@ -185,7 +185,7 @@ export function FileTree({i18nData, setI18nData}: FileTreeProps) {
             }
             setI18nData(loadedI18nData);
         },
-        [i18nData, setI18nData],
+        [i18nData, setI18nData, t],
     );
     const {pathname} = useLocation();
     const loaded = pathname.replace(/^\//, '');

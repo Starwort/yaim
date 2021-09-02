@@ -1,6 +1,7 @@
 import {Button, Card, CardContent, Dialog as Dialogue, DialogActions as DialogueActions, DialogContent as DialogueContent, DialogTitle as DialogueTitle, Grid, IconButton, InputAdornment, List, ListItem, ListItemIcon, ListItemText, TextField} from "@material-ui/core";
 import {Add, DeleteForever, Done} from "@material-ui/icons";
 import {useEffect, useState} from "react";
+import {useTranslation} from "react-i18next";
 import {useHistory, useParams} from "react-router-dom";
 import {I18nRoot, LoadedI18nRoot} from "../misc";
 import {Centred} from "./Centred";
@@ -13,16 +14,17 @@ interface NamespaceContentProps {
 export default function NamespaceContent({i18nData, setI18nData}: NamespaceContentProps) {
     const {namespace} = useParams<{namespace: string;}>();
     const history = useHistory();
+    const {t} = useTranslation('core');
     const [newName, setNewName] = useState(namespace);
     const [dialogueOpen, setDialogueOpen] = useState(false);
-    const [newKey, setNewKey] = useState('my.fancy.new.key');
+    const [newKey, setNewKey] = useState<string>(t('core:new.key'));
     let newKeyIsValid = true, keyError: string | undefined;
-    if (newKey === '') {
+    if (/^\s*$/.test(newKey)) {
         newKeyIsValid = false;
-        keyError = 'Key cannot be empty';
+        keyError = t('core:namespace.error.key_empty');
     } else if (i18nData.masterKeys[namespace].filter(item => item.startsWith(newKey)).length) {
         newKeyIsValid = false;
-        keyError = 'Key exists or is a group';
+        keyError = t('core:namespace.error.key_exists');
     }
     const nsExists = namespace !== newName && i18nData.namespaces.includes(newName);
     useEffect(
@@ -55,13 +57,13 @@ export default function NamespaceContent({i18nData, setI18nData}: NamespaceConte
                 <Grid container spacing={2}>
                     <Grid item xs={12} sm={6}>
                         <TextField
-                            label="Namespace name"
+                            label={t('core:namespace.label.name')}
                             value={newName}
                             onChange={
                                 (event) => setNewName(event.target.value)
                             }
                             error={nsExists}
-                            helperText={nsExists ? 'A namespace with this name exists already' : ''}
+                            helperText={nsExists ? t('core:namespace.error.name_exists') : ''}
                             onKeyPress={(ev) => {
                                 if (ev.key === 'Enter') {
                                     updateNSName();
@@ -88,7 +90,7 @@ export default function NamespaceContent({i18nData, setI18nData}: NamespaceConte
                                 startIcon={<DeleteForever />}
                                 onClick={removeNS}
                             >
-                                Delete namespace
+                                {t('core:namespace.label.delete')}
                             </Button>
                         </Centred>
                     </Grid>
@@ -109,7 +111,7 @@ export default function NamespaceContent({i18nData, setI18nData}: NamespaceConte
                         <Add />
                     </ListItemIcon>
                     <ListItemText>
-                        Add new key
+                        {t('core:namespace.label.add_key')}
                     </ListItemText>
                 </ListItem>
             </List>
@@ -120,24 +122,39 @@ export default function NamespaceContent({i18nData, setI18nData}: NamespaceConte
             maxWidth="sm"
             fullWidth
         >
-            <DialogueTitle>Add language</DialogueTitle>
+            <DialogueTitle>{t('core:namespace.add_key.title')}</DialogueTitle>
             <DialogueContent>
                 <TextField
                     autoFocus
-                    label="Language code"
+                    label={t('core:namespace.add_key.label.input')}
                     error={!newKeyIsValid}
-                    helperText={keyError ?? "The new key, consisting of parts separated by dots (.)"}
+                    helperText={keyError ?? t('core:namespace.add_key.label.help')}
                     fullWidth
                     value={newKey}
                     onChange={(event) => setNewKey(event.target.value)}
+                    onKeyPress={(ev) => {
+                        if (ev.key === 'Enter') {
+                            setDialogueOpen(false);
+                            setI18nData({
+                                ...i18nData,
+                                masterKeys: {
+                                    ...i18nData.masterKeys,
+                                    [namespace]: [...i18nData.masterKeys[namespace], newKey],
+                                },
+                                unsaved: true,
+                            });
+                            setNewKey(t('core:new.key'));
+                            ev.preventDefault();
+                        }
+                    }}
                 />
             </DialogueContent>
             <DialogueActions>
                 <Button onClick={() => {
                     setDialogueOpen(false);
-                    setNewKey('my.fancy.new.key');
+                    setNewKey(t('core:new.key'));
                 }}>
-                    Cancel
+                    {t('core:button.cancel')}
                 </Button>
                 <Button
                     onClick={() => {
@@ -150,11 +167,11 @@ export default function NamespaceContent({i18nData, setI18nData}: NamespaceConte
                             },
                             unsaved: true,
                         });
-                        setNewKey('my.fancy.new.key');
+                        setNewKey(t('core:new.key'));
                     }}
                     disabled={!newKeyIsValid}
                 >
-                    Add
+                    {t('core:button.confirm')}
                 </Button>
             </DialogueActions>
         </Dialogue>

@@ -2,6 +2,7 @@ import {Button, Card, CardContent, Chip, Dialog as Dialogue, DialogActions as Di
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 import {Add} from "@material-ui/icons";
 import {useState} from "react";
+import {useTranslation} from "react-i18next";
 import {I18nRoot, LoadedI18nRoot} from "../misc";
 
 
@@ -37,17 +38,18 @@ interface ProjectSettingsProps {
 export default function ProjectSettings({i18nData, setI18nData}: ProjectSettingsProps) {
     const classes = useStyles();
     const [addDialogueOpen, setAddDialogueOpen] = useState(false);
-    const [newLangCode, setNewLangCode] = useState('new-lang');
+    const {t} = useTranslation('core');
+    const [newLangCode, setNewLangCode] = useState<string>(t('core:new.lang'));
     let newLangIsValid: boolean = true, langError: string | undefined;
     if (newLangCode === '') {
         newLangIsValid = false;
-        langError = 'The language code may not be empty';
+        langError = t('core:project.error.lang_empty');
     } else if (i18nData.langs.includes(newLangCode)) {
         newLangIsValid = false;
-        langError = 'This language is already used in this project';
+        langError = t('core:project.error.lang_exists');
     } else if (disallowedPaths.test(newLangCode)) {
         newLangIsValid = false;
-        langError = 'This text cannot be used as a path name';
+        langError = t('core:project.error.bad_path');
     }
     return <>
         <Card>
@@ -89,7 +91,7 @@ export default function ProjectSettings({i18nData, setI18nData}: ProjectSettings
                     <li>
                         <Chip
                             icon={<Add />}
-                            label="Add language"
+                            label={t('core:project.add_lang.chip')}
                             className={classes.chip}
                             onClick={() => setAddDialogueOpen(true)}
                         />
@@ -103,13 +105,13 @@ export default function ProjectSettings({i18nData, setI18nData}: ProjectSettings
             maxWidth="sm"
             fullWidth
         >
-            <DialogueTitle>Add language</DialogueTitle>
+            <DialogueTitle>{t('core:project.add_lang.label.title')}</DialogueTitle>
             <DialogueContent>
                 <TextField
                     autoFocus
-                    label="Language code"
+                    label={t('core:project.add_lang.label.input')}
                     error={!newLangIsValid}
-                    helperText={langError ?? "The code for the new language, usually two characters e.g. 'en'"}
+                    helperText={langError ?? t('core:project.add_lang.label.help')}
                     fullWidth
                     value={newLangCode}
                     onChange={(event) => setNewLangCode(event.target.value)}
@@ -118,9 +120,9 @@ export default function ProjectSettings({i18nData, setI18nData}: ProjectSettings
             <DialogueActions>
                 <Button onClick={() => {
                     setAddDialogueOpen(false);
-                    setNewLangCode('new-lang');
+                    setNewLangCode(t('core:new.lang'));
                 }}>
-                    Cancel
+                    {t('core:button.cancel')}
                 </Button>
                 <Button
                     onClick={() => {
@@ -141,11 +143,11 @@ export default function ProjectSettings({i18nData, setI18nData}: ProjectSettings
                             ],
                             unsaved: true,
                         });
-                        setNewLangCode('new-lang');
+                        setNewLangCode(t('core:new.lang'));
                     }}
                     disabled={!newLangIsValid}
                 >
-                    Add
+                    {t('core:button.confirm')}
                 </Button>
             </DialogueActions>
         </Dialogue>

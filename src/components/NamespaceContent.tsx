@@ -1,4 +1,4 @@
-import {Button, Card, CardContent, Dialog as Dialogue, DialogActions as DialogueActions, DialogContent as DialogueContent, DialogTitle as DialogueTitle, Grid, IconButton, InputAdornment, List, ListItem, ListItemIcon, ListItemText, TextField} from "@material-ui/core";
+import {Box, Button, Card, CardContent, CircularProgress, Dialog as Dialogue, DialogActions as DialogueActions, DialogContent as DialogueContent, DialogTitle as DialogueTitle, Grid, IconButton, InputAdornment, List, ListItem, ListItemIcon, ListItemText, TextField, Typography} from "@material-ui/core";
 import {Add, DeleteForever, Done} from "@material-ui/icons";
 import {useEffect, useState} from "react";
 import {useTranslation} from "react-i18next";
@@ -94,6 +94,35 @@ export default function NamespaceContent({i18nData, setI18nData}: NamespaceConte
                             </Button>
                         </Centred>
                     </Grid>
+                </Grid>
+                <Grid container spacing={2}>
+                    {i18nData.langs.map(lang => {
+                        const complete = 100 * i18nData.masterKeys[namespace].filter(
+                            key => i18nData.data[lang][namespace][key]
+                        ).length / i18nData.masterKeys[namespace].length;
+                        return <Grid item xs={6} sm={3} md={2} lg={1}>
+                            <Box display="inline-flex" alignItems="center">
+                                {lang}:
+                                <Box position="relative" display="inline-flex" p={1}>
+                                    <CircularProgress variant="determinate" value={complete} />
+                                    <Box
+                                        top={0}
+                                        left={0}
+                                        bottom={0}
+                                        right={0}
+                                        position="absolute"
+                                        display="flex"
+                                        alignItems="center"
+                                        justifyContent="center"
+                                    >
+                                        <Typography variant="caption" component="div" color="textSecondary">
+                                            {complete.toFixed(0)}%
+                                        </Typography>
+                                    </Box>
+                                </Box>
+                            </Box>
+                        </Grid>;
+                    })}
                 </Grid>
             </CardContent>
             <List>

@@ -1,6 +1,7 @@
 import {Box, Button, Collapse, Grid, ListItem, ListItemIcon, ListItemText, TextField} from "@material-ui/core";
 import {DeleteForever, ExpandLess, ExpandMore, Translate} from "@material-ui/icons";
 import {useState} from "react";
+import {useTranslation} from "react-i18next";
 import {I18nRoot, LoadedI18nRoot} from "../misc";
 import {Centred} from "./Centred";
 
@@ -12,6 +13,7 @@ interface KeyRowProps {
 }
 export default function KeyRow({i18nData, setI18nData, transKey, namespace}: KeyRowProps) {
     const [collapsed, setCollapsed] = useState(false);
+    const {t} = useTranslation('core');
     return <>
         <ListItem button onClick={() => setCollapsed(collapsed => !collapsed)}>
             <ListItemIcon>
@@ -33,7 +35,7 @@ export default function KeyRow({i18nData, setI18nData, transKey, namespace}: Key
                                 value={
                                     i18nData.data[lang][namespace][transKey]
                                 }
-                                label={`Translation for ${lang}`}
+                                label={t('core:key_row.translation_for', {lang})}
                                 onChange={
                                     (event) => setI18nData({
                                         ...i18nData,
@@ -66,7 +68,7 @@ export default function KeyRow({i18nData, setI18nData, transKey, namespace}: Key
                                     unsaved: true,
                                 })}
                             >
-                                Delete key
+                                {t('core:key_row.delete')}
                             </Button>
                         </Centred>
                     </Grid>

@@ -70,7 +70,7 @@ export function range(start: number, stop: number | undefined = undefined, step:
     if (stop === undefined) {
         stop = start;
         start = 0;
-        if (step == 1) {  // benefit from optimisation where I don't use two-arg range
+        if (step === 1) {  // benefit from optimisation where I don't use two-arg range
             return Array.from(Array(stop).keys());
         }
     }
@@ -139,21 +139,43 @@ export type LoadedI18nRoot = {
     unsaved: boolean;
     langs: string[];
     master: string;
-    masterKeys: Record<string, string[]>;
+    masterKeys: Namespaces;
     namespaces: string[];
     data: Record<string, Namespaces>;
 };
 type UnloadedI18nRoot = {
     loaded: false;
 };
+
+export function getGroup(data: I18nData, groups: string[]): I18nData {
+    for (let groupName of groups) {
+        if (!(groupName in data)) {
+            data[groupName] = {};
+        }
+        data = data[groupName] as I18nData;
+    }
+    return data;
+}
+
 export type I18nRoot = LoadedI18nRoot | UnloadedI18nRoot;
 
-export type Namespaces = Record<string, FlatI18nData>;
+export type Namespaces = Record<string, I18nData>;
 
-export type FlatI18nData = Record<string, string>;
-export type NestedI18nData = {
-    [key: string]: NestedI18nData | string;
+export type I18nData = {
+    [key: string]: I18nData | string;
 };
+
+export function getKeyValue(data: I18nData, key: string): string | undefined {
+    const parts = key.split('.');
+    let group: I18nData = data;
+    for (let part of parts) {
+        group = group[part] as I18nData;
+        if (group === undefined) {
+            return undefined;
+        }
+    }
+    return group as any as string;
+}
 
 // type LoadedFileTreeFolder = {
 //     loaded: true;

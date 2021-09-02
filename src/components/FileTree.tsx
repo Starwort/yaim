@@ -24,7 +24,7 @@ import i18n from 'i18next';
 import {useCallback} from "react";
 import {useTranslation} from "react-i18next";
 import {Link, useLocation} from 'react-router-dom';
-import type {FlatI18nData, I18nRoot, LoadedI18nRoot, Namespaces, NestedI18nData} from "../misc";
+import type {I18nData, I18nRoot, LoadedI18nRoot, Namespaces} from "../misc";
 
 const {t} = i18n;
 
@@ -34,38 +34,38 @@ async function extractData(directory: FileSystemDirectoryHandle): Promise<Namesp
         if (handle.kind !== 'file') {
             continue;
         }
-        rv[namespace.replace(/\.json$/, '')] = flatten(JSON.parse(await (await handle.getFile()).text()));
+        rv[namespace.replace(/\.json$/, '')] = JSON.parse(await (await handle.getFile()).text());
     }
     return rv;
 }
 
-function flatten(data: NestedI18nData): FlatI18nData {
-    let rv: FlatI18nData = {};
+export function flatten(data: I18nData): string[] {
+    let rv = [];
     for (let [key, values] of Object.entries(data)) {
         if (typeof values === 'string') {
-            rv[key] = values;
+            rv.push(key);
         } else {
-            for (let [innerKey, value] of Object.entries(flatten(values))) {
-                rv[`${key}.${innerKey}`] = value;
+            for (let innerKey of flatten(values)) {
+                rv.push(`${key}.${innerKey}`);
             }
         }
     }
     return rv;
 }
-export function unFlatten(data: FlatI18nData): NestedI18nData {
-    let rv: NestedI18nData = {};
-    for (let [key, value] of Object.entries(data)) {
-        let dest = rv;
-        for (let part of key.split('.').slice(0, -1)) {
-            if (!(part in dest)) {
-                dest[part] = {};
-            }
-            dest = dest[part] as NestedI18nData;
-        }
-        dest[key.split('.').at(-1)] = value;
-    }
-    return rv;
-}
+// export function unFlatten(data: FlatI18nData): NestedI18nData {
+//     let rv: NestedI18nData = {};
+//     for (let [key, value] of Object.entries(data)) {
+//         let dest = rv;
+//         for (let part of key.split('.').slice(0, -1)) {
+//             if (!(part in dest)) {
+//                 dest[part] = {};
+//             }
+//             dest = dest[part] as NestedI18nData;
+//         }
+//         dest[key.split('.').at(-1)] = value;
+//     }
+//     return rv;
+// }
 
 async function loadI18nData(): Promise<I18nRoot> {
     let dir: FileSystemDirectoryHandle;
@@ -99,11 +99,7 @@ async function loadI18nData(): Promise<I18nRoot> {
     if (master !== undefined) {
         data.namespaces = Object.keys(data.data[master]);
         data.master = master;
-        data.masterKeys = Object.fromEntries(
-            Object.entries(data.data[master]).map(
-                ([name, data]) => ([name, Object.keys(data)])
-            )
-        );
+        data.masterKeys = data.data[master];
         for (let lang of data.langs) {
             for (let namespace of data.namespaces) {
                 data.data[lang][namespace] = data.data[lang][namespace] ?? {};
@@ -140,13 +136,13 @@ async function saveData(i18nData: LoadedI18nRoot, setI18nData: (i18nData: I18nRo
         for (let ns of i18nData.namespaces) {
             let data = Object.fromEntries(
                 Object.entries(i18nData.data[lang][ns]).filter(
-                    ([key, value]) => (i18nData.masterKeys[ns].includes(key) && value)
+                    ([key, value]) => (key in i18nData.masterKeys[ns] && value)
                 )
             );
             try {
                 let file = await langDir.getFileHandle(`${ns}.json`, {create: true});
                 let writeableStream = await file.createWritable();
-                await writeableStream.write(JSON.stringify(unFlatten(data)));
+                await writeableStream.write(JSON.stringify(data));
                 await writeableStream.close();
             } catch (error) {
                 console.warn(t('core:save.warn.namespace_fail', {lang, ns, error}));

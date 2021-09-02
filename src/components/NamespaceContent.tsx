@@ -1,10 +1,12 @@
 import {Box, Button, Card, CardContent, CircularProgress, Dialog as Dialogue, DialogActions as DialogueActions, DialogContent as DialogueContent, DialogTitle as DialogueTitle, Grid, IconButton, InputAdornment, List, ListItem, ListItemIcon, ListItemText, TextField, Typography} from "@material-ui/core";
 import {Add, DeleteForever, Done} from "@material-ui/icons";
-import {useEffect, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {useTranslation} from "react-i18next";
 import {useHistory, useParams} from "react-router-dom";
-import {I18nRoot, LoadedI18nRoot} from "../misc";
+import {getKeyValue, I18nRoot, LoadedI18nRoot} from "../misc";
 import {Centred} from "./Centred";
+import {flatten} from './FileTree';
+import KeyGroup from "./KeyGroup";
 import KeyRow from "./KeyRow";
 
 interface NamespaceContentProps {
@@ -16,15 +18,23 @@ export default function NamespaceContent({i18nData, setI18nData}: NamespaceConte
     const history = useHistory();
     const {t} = useTranslation('core');
     const [newName, setNewName] = useState(namespace);
-    const [dialogueOpen, setDialogueOpen] = useState(false);
+    const [keyDialogueOpen, setKeyDialogueOpen] = useState(false);
+    const [keyGroupDialogueOpen, setKeyGroupDialogueOpen] = useState(false);
     const [newKey, setNewKey] = useState<string>(t('core:new.key'));
     let newKeyIsValid = true, keyError: string | undefined;
+    const flatKeys = useMemo(
+        () => flatten(i18nData.masterKeys[namespace]),
+        [i18nData.masterKeys, namespace],
+    );
     if (/^\s*$/.test(newKey)) {
         newKeyIsValid = false;
         keyError = t('core:namespace.error.key_empty');
-    } else if (i18nData.masterKeys[namespace].filter(item => item.startsWith(newKey)).length) {
+    } else if (newKey in i18nData.masterKeys[namespace]) {
         newKeyIsValid = false;
         keyError = t('core:namespace.error.key_exists');
+    } else if (/\./.test(newKey)) {
+        newKeyIsValid = false;
+        keyError = t('core:namespace.error.key_has_dot');
     }
     const nsExists = namespace !== newName && i18nData.namespaces.includes(newName);
     useEffect(
@@ -97,9 +107,9 @@ export default function NamespaceContent({i18nData, setI18nData}: NamespaceConte
                 </Grid>
                 <Grid container spacing={2}>
                     {i18nData.langs.map(lang => {
-                        const complete = 100 * i18nData.masterKeys[namespace].filter(
-                            key => i18nData.data[lang][namespace][key]
-                        ).length / i18nData.masterKeys[namespace].length;
+                        const complete = 100 * flatKeys.filter(
+                            key => getKeyValue(i18nData.data[lang][namespace], key)
+                        ).length / flatKeys.length;
                         return <Grid item xs={6} sm={3} md={2} lg={1}>
                             <Box display="inline-flex" alignItems="center">
                                 {lang}:
@@ -126,16 +136,26 @@ export default function NamespaceContent({i18nData, setI18nData}: NamespaceConte
                 </Grid>
             </CardContent>
             <List>
-                {i18nData.masterKeys[namespace].map(
-                    key => <KeyRow
-                        key={key}
-                        i18nData={i18nData}
-                        setI18nData={setI18nData}
-                        transKey={key}
-                        namespace={namespace}
-                    />
+                {Object.entries(i18nData.masterKeys[namespace]).map(
+                    ([key, value]) => typeof value === 'string'
+                        ? <KeyRow
+                            key={key}
+                            i18nData={i18nData}
+                            setI18nData={setI18nData}
+                            transKey={key}
+                            namespace={namespace}
+                            groups={[]}
+                        />
+                        : <KeyGroup
+                            key={key}
+                            groupName={key}
+                            i18nData={i18nData}
+                            setI18nData={setI18nData}
+                            namespace={namespace}
+                            groups={[]}
+                        />
                 )}
-                <ListItem button onClick={() => setDialogueOpen(true)}>
+                <ListItem button onClick={() => setKeyDialogueOpen(true)}>
                     <ListItemIcon>
                         <Add />
                     </ListItemIcon>
@@ -143,11 +163,19 @@ export default function NamespaceContent({i18nData, setI18nData}: NamespaceConte
                         {t('core:namespace.label.add_key')}
                     </ListItemText>
                 </ListItem>
+                <ListItem button onClick={() => setKeyGroupDialogueOpen(true)}>
+                    <ListItemIcon>
+                        <Add />
+                    </ListItemIcon>
+                    <ListItemText>
+                        {t('core:namespace.label.add_group')}
+                    </ListItemText>
+                </ListItem>
             </List>
         </Card>
         <Dialogue
-            open={dialogueOpen}
-            onClose={() => setDialogueOpen(false)}
+            open={keyDialogueOpen}
+            onClose={() => setKeyDialogueOpen(false)}
             maxWidth="sm"
             fullWidth
         >
@@ -163,12 +191,15 @@ export default function NamespaceContent({i18nData, setI18nData}: NamespaceConte
                     onChange={(event) => setNewKey(event.target.value)}
                     onKeyPress={(ev) => {
                         if (ev.key === 'Enter') {
-                            setDialogueOpen(false);
+                            setKeyDialogueOpen(false);
                             setI18nData({
                                 ...i18nData,
                                 masterKeys: {
                                     ...i18nData.masterKeys,
-                                    [namespace]: [...i18nData.masterKeys[namespace], newKey],
+                                    [namespace]: {
+                                        ...i18nData.masterKeys[namespace],
+                                        [newKey]: ''
+                                    },
                                 },
                                 unsaved: true,
                             });
@@ -180,19 +211,87 @@ export default function NamespaceContent({i18nData, setI18nData}: NamespaceConte
             </DialogueContent>
             <DialogueActions>
                 <Button onClick={() => {
-                    setDialogueOpen(false);
+                    setKeyDialogueOpen(false);
                     setNewKey(t('core:new.key'));
                 }}>
                     {t('core:button.cancel')}
                 </Button>
                 <Button
                     onClick={() => {
-                        setDialogueOpen(false);
+                        setKeyDialogueOpen(false);
                         setI18nData({
                             ...i18nData,
                             masterKeys: {
                                 ...i18nData.masterKeys,
-                                [namespace]: [...i18nData.masterKeys[namespace], newKey],
+                                [namespace]: {
+                                    ...i18nData.masterKeys[namespace],
+                                    [newKey]: ''
+                                },
+                            },
+                            unsaved: true,
+                        });
+                        setNewKey(t('core:new.key'));
+                    }}
+                    disabled={!newKeyIsValid}
+                >
+                    {t('core:button.confirm')}
+                </Button>
+            </DialogueActions>
+        </Dialogue>
+        <Dialogue
+            open={keyGroupDialogueOpen}
+            onClose={() => setKeyGroupDialogueOpen(false)}
+            maxWidth="sm"
+            fullWidth
+        >
+            <DialogueTitle>{t('core:namespace.add_group.title')}</DialogueTitle>
+            <DialogueContent>
+                <TextField
+                    autoFocus
+                    label={t('core:namespace.add_key.label.input')}
+                    error={!newKeyIsValid}
+                    helperText={keyError ?? t('core:namespace.add_key.label.help')}
+                    fullWidth
+                    value={newKey}
+                    onChange={(event) => setNewKey(event.target.value)}
+                    onKeyPress={(ev) => {
+                        if (ev.key === 'Enter') {
+                            setKeyGroupDialogueOpen(false);
+                            setI18nData({
+                                ...i18nData,
+                                masterKeys: {
+                                    ...i18nData.masterKeys,
+                                    [namespace]: {
+                                        ...i18nData.masterKeys[namespace],
+                                        [newKey]: {}
+                                    },
+                                },
+                                unsaved: true,
+                            });
+                            setNewKey(t('core:new.key'));
+                            ev.preventDefault();
+                        }
+                    }}
+                />
+            </DialogueContent>
+            <DialogueActions>
+                <Button onClick={() => {
+                    setKeyGroupDialogueOpen(false);
+                    setNewKey(t('core:new.key'));
+                }}>
+                    {t('core:button.cancel')}
+                </Button>
+                <Button
+                    onClick={() => {
+                        setKeyGroupDialogueOpen(false);
+                        setI18nData({
+                            ...i18nData,
+                            masterKeys: {
+                                ...i18nData.masterKeys,
+                                [namespace]: {
+                                    ...i18nData.masterKeys[namespace],
+                                    [newKey]: {}
+                                },
                             },
                             unsaved: true,
                         });

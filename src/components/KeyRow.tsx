@@ -2,7 +2,7 @@ import {Box, Button, Collapse, Grid, ListItem, ListItemIcon, ListItemText, TextF
 import {DeleteForever, ExpandLess, ExpandMore, Translate} from "@material-ui/icons";
 import {useState} from "react";
 import {useTranslation} from "react-i18next";
-import {I18nRoot, LoadedI18nRoot} from "../misc";
+import {getGroup, I18nData, I18nRoot, LoadedI18nRoot} from "../misc";
 import {Centred} from "./Centred";
 
 interface KeyRowProps {
@@ -10,12 +10,14 @@ interface KeyRowProps {
     setI18nData: (value: I18nRoot) => void;
     transKey: string;
     namespace: string;
+    groups: string[];
+    className?: string;
 }
-export default function KeyRow({i18nData, setI18nData, transKey, namespace}: KeyRowProps) {
+export default function KeyRow({groups, i18nData, setI18nData, transKey, namespace, className}: KeyRowProps) {
     const [collapsed, setCollapsed] = useState(false);
     const {t} = useTranslation('core');
     return <>
-        <ListItem button onClick={() => setCollapsed(collapsed => !collapsed)}>
+        <ListItem button onClick={() => setCollapsed(collapsed => !collapsed)} className={className}>
             <ListItemIcon>
                 <Translate />
             </ListItemIcon>
@@ -24,7 +26,7 @@ export default function KeyRow({i18nData, setI18nData, transKey, namespace}: Key
             </ListItemText>
             {collapsed ? <ExpandLess /> : <ExpandMore />}
         </ListItem>
-        <Collapse in={collapsed}>
+        <Collapse in={collapsed} className={className} unmountOnExit>
             <Box p={2}>
                 <Grid container spacing={2}>
                     {i18nData.langs.map(
@@ -33,24 +35,17 @@ export default function KeyRow({i18nData, setI18nData, transKey, namespace}: Key
                                 multiline
                                 fullWidth
                                 value={
-                                    i18nData.data[lang][namespace][transKey]
+                                    getGroup(i18nData.data[lang][namespace], groups)[transKey]
                                 }
                                 label={t('core:key_row.translation_for', {lang})}
                                 onChange={
-                                    (event) => setI18nData({
-                                        ...i18nData,
-                                        data: {
-                                            ...i18nData.data,
-                                            [lang]: {
-                                                ...i18nData.data[lang],
-                                                [namespace]: {
-                                                    ...i18nData.data[lang][namespace],
-                                                    [transKey]: event.target.value,
-                                                },
-                                            },
-                                        },
-                                        unsaved: true,
-                                    })
+                                    (event) => {
+                                        getGroup(i18nData.data[lang][namespace], groups)[transKey] = event.target.value;
+                                        setI18nData({
+                                            ...i18nData,
+                                            unsaved: true,
+                                        });
+                                    }
                                 }
                             />
                         </Grid>
@@ -59,14 +54,17 @@ export default function KeyRow({i18nData, setI18nData, transKey, namespace}: Key
                         <Centred>
                             <Button
                                 startIcon={<DeleteForever />}
-                                onClick={() => setI18nData({
-                                    ...i18nData,
-                                    masterKeys: {
-                                        ...i18nData.masterKeys,
-                                        [namespace]: i18nData.masterKeys[namespace].filter(key => key !== transKey),
-                                    },
-                                    unsaved: true,
-                                })}
+                                onClick={() => {
+                                    let containingGroup = i18nData.masterKeys[namespace];
+                                    for (let group of groups) {
+                                        containingGroup = containingGroup[group] as I18nData;
+                                    }
+                                    delete containingGroup[transKey];
+                                    setI18nData({
+                                        ...i18nData,
+                                        unsaved: true,
+                                    });
+                                }}
                             >
                                 {t('core:key_row.delete')}
                             </Button>

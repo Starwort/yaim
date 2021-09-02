@@ -73,11 +73,7 @@ export default function ProjectSettings({i18nData, setI18nData}: ProjectSettings
                                     let data = {...i18nData};
                                     data.namespaces = Object.keys(data.data[lang]);
                                     data.master = lang;
-                                    data.masterKeys = Object.fromEntries(
-                                        Object.entries(data.data[lang]).map(
-                                            ([name, data]) => ([name, Object.keys(data)])
-                                        )
-                                    );
+                                    data.masterKeys = data.data[lang];
                                     for (let lang of data.langs) {
                                         for (let namespace of data.namespaces) {
                                             data.data[lang][namespace] = data.data[lang][namespace] ?? {};

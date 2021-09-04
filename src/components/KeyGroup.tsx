@@ -1,6 +1,6 @@
 import {Button, Collapse, Dialog as Dialogue, DialogActions as DialogueActions, DialogContent as DialogueContent, DialogTitle as DialogueTitle, List, ListItem, ListItemIcon, ListItemText, TextField} from "@material-ui/core";
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
-import {Add, DeleteForever, ExpandLess, ExpandMore, Folder, FolderOpen} from "@material-ui/icons";
+import {Add, CreateNewFolder, DeleteForever, ExpandLess, ExpandMore, Folder, FolderOpen} from "@material-ui/icons";
 import {useMemo, useState} from "react";
 import {useTranslation} from "react-i18next";
 import {getGroup, I18nData, I18nRoot, LoadedI18nRoot} from "../misc";
@@ -102,7 +102,7 @@ export default function KeyGroup({groups, i18nData, setI18nData, groupName, name
                     onClick={() => setKeyGroupDialogueOpen(true)}
                 >
                     <ListItemIcon>
-                        <Add />
+                        <CreateNewFolder />
                     </ListItemIcon>
                     <ListItemText>
                         {t('core:namespace.label.add_group')}

@@ -1,5 +1,5 @@
 import {Box, Button, Card, CardContent, CircularProgress, Dialog as Dialogue, DialogActions as DialogueActions, DialogContent as DialogueContent, DialogTitle as DialogueTitle, Grid, IconButton, InputAdornment, List, ListItem, ListItemIcon, ListItemText, TextField, Typography} from "@material-ui/core";
-import {Add, DeleteForever, Done} from "@material-ui/icons";
+import {Add, CreateNewFolder, DeleteForever, Done} from "@material-ui/icons";
 import {useEffect, useMemo, useState} from "react";
 import {useTranslation} from "react-i18next";
 import {useHistory, useParams} from "react-router-dom";
@@ -174,7 +174,7 @@ export default function NamespaceContent({i18nData, setI18nData}: NamespaceConte
                 </ListItem>
                 <ListItem button onClick={() => setKeyGroupDialogueOpen(true)}>
                     <ListItemIcon>
-                        <Add />
+                        <CreateNewFolder />
                     </ListItemIcon>
                     <ListItemText>
                         {t('core:namespace.label.add_group')}

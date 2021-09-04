@@ -13,3 +13,7 @@ To run the app: `npm run electron`
 To develop the app: `npm start` in one console, and `npm run electron-dev` in another.
 
 In addition to the Electron app, [a web version](https://starbright.dyndns.org/yaim) is available.
+
+## Credits
+
+The YAIM logos were designed by @0xicl33n. All other material was created by @Starwort, the owner of this repository.

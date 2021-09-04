@@ -18,12 +18,13 @@
  * You should have received a copy of the GNU General Public License
  * along with YAIM. If not, see <https://www.gnu.org/licenses/>.
  */
-import {AppBar as TopAppBar, IconButton, SvgIcon, Toolbar, Typography} from '@material-ui/core';
+import {AppBar as TopAppBar, IconButton, SvgIcon, Toolbar} from '@material-ui/core';
 import {Close, Maximize, Minimize} from '@material-ui/icons';
 import MenuIcon from '@material-ui/icons/Menu';
 import isElectron from 'is-electron';
 import React, {useEffect} from 'react';
 import {ReactComponent as unmaximiseIcon} from '../assets/extra_icons/unmaximise.svg';
+import LogoLong from '../assets/extra_icons/yaim_long.png';
 
 function Unmaximise() {
     return <SvgIcon component={unmaximiseIcon} />;
@@ -62,9 +63,10 @@ export function AppBar({setDrawerOpen, drawerOpen, title}: AppBarProps) {
                     >
                         <MenuIcon />
                     </IconButton>
-                    <Typography variant="h6">
+                    {/* <Typography variant="h6">
                         {title}
-                    </Typography>
+                    </Typography> */}
+                    <img src={LogoLong} alt="YAIM" style={{height: 24}} />
                     <div style={{flexGrow: 1}} />
                     {isElectron() && <>
                         <IconButton

@@ -19,9 +19,10 @@
  * along with YAIM. If not, see <https://www.gnu.org/licenses/>.
  */
 import {ListItem, ListItemIcon, ListItemText} from "@material-ui/core";
-import {Add, Folder, Save, Settings} from "@material-ui/icons";
+import {Add, Close, Folder, Save, Settings} from "@material-ui/icons";
 import i18n from 'i18next';
-import {useCallback} from "react";
+import isElectron from "is-electron";
+import {useCallback, useEffect} from "react";
 import {useTranslation} from "react-i18next";
 import {Link, useLocation} from 'react-router-dom';
 import type {I18nData, I18nRoot, LoadedI18nRoot, Namespaces} from "../misc";
@@ -157,12 +158,15 @@ async function saveData(i18nData: LoadedI18nRoot, setI18nData: (i18nData: I18nRo
     }
 }
 
+const {ipcRenderer} = isElectron() ? window.require('electron') : {ipcRenderer: undefined};
+
 interface FileTreeProps {
     i18nData: I18nRoot;
     setI18nData: (value: I18nRoot) => void;
 }
 export function FileTree({i18nData, setI18nData}: FileTreeProps) {
     const {t} = useTranslation('core');
+    let saveCallback: () => void;
     const createNamespace = useCallback(
         () => {
             const loadedI18nData = {...i18nData, unsaved: true} as LoadedI18nRoot;
@@ -185,6 +189,32 @@ export function FileTree({i18nData, setI18nData}: FileTreeProps) {
     );
     const {pathname} = useLocation();
     const loaded = pathname.replace(/^\//, '');
+    useEffect(
+        () => {
+            if (!isElectron()) {
+                return;
+            }
+            function saveErrors(errors: [string, any][]) {
+                for (let [error, params] of errors) {
+                    console.warn(t(error, params));
+                }
+                alert(t('core:save.warn.alert'));
+            }
+            function saveSuccess() {
+                if (!i18nData.loaded) {
+                    return;
+                }
+                setI18nData({...i18nData, unsaved: false});
+            }
+            ipcRenderer.addListener('saveErrors', saveErrors);
+            ipcRenderer.addListener('saveSuccess', saveSuccess);
+            return () => {
+                ipcRenderer.removeListener('saveErrors', saveErrors);
+                ipcRenderer.removeListener('saveSuccess', saveSuccess);
+            };
+        },
+        [setI18nData, i18nData, t],
+    );
     if (!i18nData.loaded) {
         return <ListItem
             button
@@ -193,6 +223,11 @@ export function FileTree({i18nData, setI18nData}: FileTreeProps) {
             <ListItemIcon><Add /></ListItemIcon>
             <ListItemText>{t('core:sidebar.load_data')}</ListItemText>
         </ListItem>;
+    }
+    if (isElectron()) {
+        saveCallback = () => ipcRenderer.send('triggerSave', i18nData);
+    } else {
+        saveCallback = () => saveData(i18nData, setI18nData);
     }
     return <>
         <ListItem
@@ -230,7 +265,7 @@ export function FileTree({i18nData, setI18nData}: FileTreeProps) {
                 {t('core:sidebar.create_namespace')}
             </ListItemText>
         </ListItem>
-        {i18nData.unsaved && <ListItem button onClick={() => saveData(i18nData, setI18nData)}>
+        {i18nData.unsaved && <ListItem button onClick={saveCallback}>
             <ListItemIcon>
                 <Save />
             </ListItemIcon>
@@ -238,5 +273,13 @@ export function FileTree({i18nData, setI18nData}: FileTreeProps) {
                 {t('core:sidebar.save_project')}
             </ListItemText>
         </ListItem>}
+        <ListItem button onClick={() => setI18nData({loaded: false})}>
+            <ListItemIcon>
+                <Close />
+            </ListItemIcon>
+            <ListItemText>
+                {t('core:sidebar.close_project')}
+            </ListItemText>
+        </ListItem>
     </>;
 }

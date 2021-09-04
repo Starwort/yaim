@@ -1,7 +1,7 @@
 import {Button, Collapse, Dialog as Dialogue, DialogActions as DialogueActions, DialogContent as DialogueContent, DialogTitle as DialogueTitle, List, ListItem, ListItemIcon, ListItemText, TextField} from "@material-ui/core";
 import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
-import {Add, ExpandLess, ExpandMore, Folder, FolderOpen} from "@material-ui/icons";
-import {useState} from "react";
+import {Add, DeleteForever, ExpandLess, ExpandMore, Folder, FolderOpen} from "@material-ui/icons";
+import {useMemo, useState} from "react";
 import {useTranslation} from "react-i18next";
 import {getGroup, I18nData, I18nRoot, LoadedI18nRoot} from "../misc";
 import KeyRow from "./KeyRow";
@@ -30,16 +30,21 @@ export default function KeyGroup({groups, i18nData, setI18nData, groupName, name
     const [keyGroupDialogueOpen, setKeyGroupDialogueOpen] = useState(false);
     const [newKey, setNewKey] = useState<string>(t('core:new.key'));
     const {nested} = useStyles();
-    const myGroups = [...groups, groupName];
-    let groupData = i18nData.masterKeys[namespace];
+    const myGroups = useMemo(
+        () => [...groups, groupName],
+        [groups, groupName],
+    );
     let newKeyIsValid = true, keyError: string | undefined;
-    for (let group of myGroups) {
-        groupData = groupData[group] as I18nData;
-    }
+    let nsKeys = i18nData.masterKeys[namespace];
+    const groupKeys = useMemo(
+        () => getGroup(nsKeys, groups),
+        [groups, nsKeys],
+    );
+    const groupData = groupKeys[groupName] as I18nData;
     if (/^\s*$/.test(newKey)) {
         newKeyIsValid = false;
         keyError = t('core:namespace.error.key_empty');
-    } else if (newKey in i18nData.masterKeys[namespace]) {
+    } else if (newKey in groupData) {
         newKeyIsValid = false;
         keyError = t('core:namespace.error.key_exists');
     } else if (/\./.test(newKey)) {
@@ -58,7 +63,9 @@ export default function KeyGroup({groups, i18nData, setI18nData, groupName, name
         </ListItem>
         <Collapse in={expanded} className={className} unmountOnExit>
             <List component="div" disablePadding>
-                {Object.entries(groupData).map(
+                {Object.entries(groupData).sort(
+                    ([keyA,], [keyB,]) => keyA < keyB ? -1 : 1
+                ).map(
                     ([key, values]) =>
                         typeof values === 'string' ? <KeyRow
                             groups={myGroups}
@@ -99,6 +106,23 @@ export default function KeyGroup({groups, i18nData, setI18nData, groupName, name
                     </ListItemIcon>
                     <ListItemText>
                         {t('core:namespace.label.add_group')}
+                    </ListItemText>
+                </ListItem>
+                <ListItem
+                    button
+                    onClick={() => {
+                        delete getGroup(i18nData.masterKeys[namespace], groups)[groupName];
+                        setI18nData({
+                            ...i18nData,
+                            unsaved: true,
+                        });
+                    }}
+                >
+                    <ListItemIcon>
+                        <DeleteForever />
+                    </ListItemIcon>
+                    <ListItemText>
+                        {t('core:key_group.delete')}
                     </ListItemText>
                 </ListItem>
             </List>

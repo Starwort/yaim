@@ -2,7 +2,7 @@ import {Box, Button, Collapse, Grid, ListItem, ListItemIcon, ListItemText, TextF
 import {DeleteForever, ExpandLess, ExpandMore, Translate} from "@material-ui/icons";
 import {useState} from "react";
 import {useTranslation} from "react-i18next";
-import {getGroup, I18nData, I18nRoot, LoadedI18nRoot} from "../misc";
+import {getGroup, I18nRoot, LoadedI18nRoot} from "../misc";
 import {Centred} from "./Centred";
 
 interface KeyRowProps {
@@ -30,7 +30,7 @@ export default function KeyRow({groups, i18nData, setI18nData, transKey, namespa
             <Box p={2}>
                 <Grid container spacing={2}>
                     {i18nData.langs.map(
-                        lang => <Grid item xs={12} sm={6} md={4} lg={3}>
+                        lang => <Grid item xs={12} sm={6} lg={4} xl={3} key={lang}>
                             <TextField
                                 multiline
                                 fullWidth
@@ -55,11 +55,7 @@ export default function KeyRow({groups, i18nData, setI18nData, transKey, namespa
                             <Button
                                 startIcon={<DeleteForever />}
                                 onClick={() => {
-                                    let containingGroup = i18nData.masterKeys[namespace];
-                                    for (let group of groups) {
-                                        containingGroup = containingGroup[group] as I18nData;
-                                    }
-                                    delete containingGroup[transKey];
+                                    delete getGroup(i18nData.masterKeys[namespace], groups)[transKey];
                                     setI18nData({
                                         ...i18nData,
                                         unsaved: true,

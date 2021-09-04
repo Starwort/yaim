@@ -22,7 +22,7 @@ import {AppBar as TopAppBar, IconButton, SvgIcon, Toolbar, Typography} from '@ma
 import {Close, Maximize, Minimize} from '@material-ui/icons';
 import MenuIcon from '@material-ui/icons/Menu';
 import isElectron from 'is-electron';
-import React from 'react';
+import React, {useEffect} from 'react';
 import {ReactComponent as unmaximiseIcon} from '../assets/extra_icons/unmaximise.svg';
 
 function Unmaximise() {
@@ -39,10 +39,15 @@ interface AppBarProps {
 
 export function AppBar({setDrawerOpen, drawerOpen, title}: AppBarProps) {
     const [maximised, setMaximised] = React.useState(true);
-    if (isElectron()) {
-        ipcRenderer.on('maximise', () => setMaximised(true));
-        ipcRenderer.on('unmaximise', () => setMaximised(false));
-    }
+    useEffect(
+        () => {
+            if (isElectron()) {
+                ipcRenderer.on('maximise', () => setMaximised(true));
+                ipcRenderer.on('unmaximise', () => setMaximised(false));
+            }
+        },
+        [],
+    );
     return (
         <>
             <TopAppBar position="fixed" className="drag">

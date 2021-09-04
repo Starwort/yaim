@@ -105,38 +105,47 @@ export default function NamespaceContent({i18nData, setI18nData}: NamespaceConte
                         </Centred>
                     </Grid>
                 </Grid>
-                <Grid container spacing={2}>
-                    {i18nData.langs.map(lang => {
-                        const complete = 100 * flatKeys.filter(
-                            key => getKeyValue(i18nData.data[lang][namespace], key)
-                        ).length / flatKeys.length;
-                        return <Grid item xs={6} sm={3} md={2} lg={1}>
-                            <Box display="inline-flex" alignItems="center">
-                                {lang}:
-                                <Box position="relative" display="inline-flex" p={1}>
-                                    <CircularProgress variant="determinate" value={complete} />
-                                    <Box
-                                        top={0}
-                                        left={0}
-                                        bottom={0}
-                                        right={0}
-                                        position="absolute"
-                                        display="flex"
-                                        alignItems="center"
-                                        justifyContent="center"
-                                    >
-                                        <Typography variant="caption" component="div" color="textSecondary">
-                                            {complete.toFixed(0)}%
-                                        </Typography>
+                <Box p={2}>
+                    <Centred>
+                        <Typography variant="h5" component="h2">
+                            {t('core:namespace.label.completion')}
+                        </Typography>
+                    </Centred>
+                    <Grid container spacing={2}>
+                        {i18nData.langs.map(lang => {
+                            const complete = 100 * flatKeys.filter(
+                                key => getKeyValue(i18nData.data[lang][namespace], key)
+                            ).length / flatKeys.length;
+                            return <Grid item xs={12} sm={6} md={2} xl={1} key={lang}>
+                                <Centred>
+                                    {lang}:
+                                    <Box position="relative" display="inline-flex" p={1}>
+                                        <CircularProgress variant="determinate" value={complete} />
+                                        <Box
+                                            top={0}
+                                            left={0}
+                                            bottom={0}
+                                            right={0}
+                                            position="absolute"
+                                            display="flex"
+                                            alignItems="center"
+                                            justifyContent="center"
+                                        >
+                                            <Typography variant="caption" component="div" color="textSecondary">
+                                                {complete.toFixed(0)}%
+                                            </Typography>
+                                        </Box>
                                     </Box>
-                                </Box>
-                            </Box>
-                        </Grid>;
-                    })}
-                </Grid>
+                                </Centred>
+                            </Grid>;
+                        })}
+                    </Grid>
+                </Box>
             </CardContent>
             <List>
-                {Object.entries(i18nData.masterKeys[namespace]).map(
+                {Object.entries(i18nData.masterKeys[namespace]).sort(
+                    ([keyA,], [keyB,]) => keyA < keyB ? -1 : 1
+                ).map(
                     ([key, value]) => typeof value === 'string'
                         ? <KeyRow
                             key={key}

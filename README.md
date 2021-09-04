@@ -6,11 +6,10 @@ An additional open-source i18n manager (as the open-source ones all seem to be b
 
 ## Usage
 
-<!--
-To run the app's shell: `npm run electron`
+Install all dependencies: `npm i`
+
+To run the app: `npm run electron`
 
 To develop the app: `npm start` in one console, and `npm run electron-dev` in another.
--->
-Due to an issue with Electron and the File System Access API, the Electron version of this app does not work properly. However, [the web version](https://starbright.dyndns.org/yaim) can be used instead, and will remain live until Electron can be used.
 
-If you wish to help develop the app, you can run `npm start` to start the debug server, and either open the app in a browser or run `npm run electron-dev` to launch Electron.
+In addition to the Electron app, [a web version](https://starbright.dyndns.org/yaim) is available.

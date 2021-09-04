@@ -24,4 +24,4 @@ yarn-error.log*
 # is a symlink to src/assets
 public/assets
 # is noisy in commits
-build/
+# build/

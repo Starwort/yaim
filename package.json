@@ -1,5 +1,6 @@
 {
   "name": "yaim",
+  "productName": "Yet Another I18n Manager",
   "homepage": "./",
   "version": "0.0.1",
   "private": false,

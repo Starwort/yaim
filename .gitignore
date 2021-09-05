@@ -25,3 +25,5 @@ yarn-error.log*
 public/assets
 # temp folder for dist
 dist/
+# is uploaded to 'releases'
+yaim.zip

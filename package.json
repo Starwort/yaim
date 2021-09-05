@@ -43,7 +43,7 @@
     "eject": "react-scripts eject",
     "electron": "electron .",
     "electron-dev": "electron . --debug",
-    "package": "rm -rf dist; rm yaim.zip; cp -R electron_bin dist; cp -R build dist/resources; cp electron_package.json dist/resources/build/package.json; cp main.js dist/resources/build; asar pack dist/resources/build dist/resources/app.asar; rm -rf dist/resources/build; cd dist; zip -r ../yaim.zip *"
+    "package": "rm -rf dist; rm yaim.zip; cp -R electron_bin dist; cp -R build dist/resources; cp electron_package.json dist/resources/package.json; cp main.js dist/resources; asar pack dist/resources dist/resources/app.asar; rm -rf dist/resources/build dist/resources/main.js dist/resources/package.json; cd dist; zip -r ../yaim.zip *"
   },
   "eslintConfig": {
     "extends": [

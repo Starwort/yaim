@@ -16,6 +16,7 @@
     "@types/react-dom": "^17.0.9",
     "@types/react-router-dom": "^5.1.8",
     "@types/wicg-file-system-access": "^2020.9.2",
+    "asar": "^3.0.3",
     "electron": "^14.0.0",
     "esm": "^3.2.25",
     "i18next": "^20.4.0",

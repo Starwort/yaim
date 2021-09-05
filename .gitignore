@@ -27,3 +27,5 @@ public/assets
 dist/
 # is uploaded to 'releases'
 yaim.zip
+# is too big
+electron_bin/yaim.exe

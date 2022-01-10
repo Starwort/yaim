@@ -1,4 +1,4 @@
-import {Box, Button, Collapse, Grid, ListItem, ListItemIcon, ListItemText, TextField} from "@material-ui/core";
+import {Box, Button, Collapse, Grid, ListItem, ListItemIcon, ListItemText, TextField, useTheme} from "@material-ui/core";
 import {DeleteForever, ExpandLess, ExpandMore, Translate} from "@material-ui/icons";
 import {useState} from "react";
 import {useTranslation} from "react-i18next";
@@ -11,13 +11,14 @@ interface KeyRowProps {
     transKey: string;
     namespace: string;
     groups: string[];
-    className?: string;
+    nestDepth: number;
 }
-export default function KeyRow({groups, i18nData, setI18nData, transKey, namespace, className}: KeyRowProps) {
+export default function KeyRow({groups, i18nData, setI18nData, transKey, namespace, nestDepth}: KeyRowProps) {
     const [collapsed, setCollapsed] = useState(false);
     const {t} = useTranslation('core');
+    const theme = useTheme();
     return <>
-        <ListItem button onClick={() => setCollapsed(collapsed => !collapsed)} className={className}>
+        <ListItem button onClick={() => setCollapsed(collapsed => !collapsed)} style={{paddingLeft: theme.spacing(4 * nestDepth)}}>
             <ListItemIcon>
                 <Translate />
             </ListItemIcon>
@@ -26,7 +27,7 @@ export default function KeyRow({groups, i18nData, setI18nData, transKey, namespa
             </ListItemText>
             {collapsed ? <ExpandLess /> : <ExpandMore />}
         </ListItem>
-        <Collapse in={collapsed} className={className} unmountOnExit>
+        <Collapse in={collapsed} unmountOnExit>
             <Box p={2}>
                 <Grid container spacing={2}>
                     {i18nData.langs.map(

@@ -49,6 +49,10 @@ function createWindow() {
     });
 };
 
+// Enable FSAA
+// https://github.com/electron/electron/issues/28422#issuecomment-987504138
+app.commandLine.appendSwitch("enable-experimental-web-platform-features");
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -124,7 +128,7 @@ ipcMain.on('triggerSave', async (event, i18nData) => {
             );
             try {
                 let file = await fs.open(path.join(langDirName, `${ns}.json`), 'w');
-                await file.write(JSON.stringify(data));
+                await file.write(JSON.stringify(data, null, 4));
                 await file.close();
             } catch (error) {
                 errors.push(['core:save.warn.namespace_fail', {lang, ns, error}]);

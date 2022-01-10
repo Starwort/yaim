@@ -1,5 +1,5 @@
 import {Button, Collapse, Dialog as Dialogue, DialogActions as DialogueActions, DialogContent as DialogueContent, DialogTitle as DialogueTitle, List, ListItem, ListItemIcon, ListItemText, TextField} from "@material-ui/core";
-import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
+import {useTheme} from '@material-ui/core/styles';
 import {Add, CreateNewFolder, DeleteForever, ExpandLess, ExpandMore, Folder, FolderOpen} from "@material-ui/icons";
 import {useMemo, useState} from "react";
 import {useTranslation} from "react-i18next";
@@ -7,29 +7,21 @@ import {getGroup, I18nData, I18nRoot, LoadedI18nRoot} from "../misc";
 import KeyRow from "./KeyRow";
 
 
-const useStyles = makeStyles((theme: Theme) =>
-    createStyles({
-        nested: {
-            paddingLeft: theme.spacing(4),
-        },
-    }),
-);
-
 interface KeyGroupProps {
     i18nData: LoadedI18nRoot;
     setI18nData: (value: I18nRoot) => void;
     groupName: string;
     namespace: string;
     groups: string[];
-    className?: string;
+    nestDepth: number;
 }
-export default function KeyGroup({groups, i18nData, setI18nData, groupName, namespace, className}: KeyGroupProps) {
+export default function KeyGroup({groups, i18nData, setI18nData, groupName, namespace, nestDepth}: KeyGroupProps) {
     const {t} = useTranslation('core');
     const [expanded, setExpanded] = useState(false);
     const [keyDialogueOpen, setKeyDialogueOpen] = useState(false);
     const [keyGroupDialogueOpen, setKeyGroupDialogueOpen] = useState(false);
     const [newKey, setNewKey] = useState<string>(t('core:new.key'));
-    const {nested} = useStyles();
+    const theme = useTheme();
     const myGroups = useMemo(
         () => [...groups, groupName],
         [groups, groupName],
@@ -52,7 +44,7 @@ export default function KeyGroup({groups, i18nData, setI18nData, groupName, name
         keyError = t('core:namespace.error.key_has_dot');
     }
     return <>
-        <ListItem button onClick={() => setExpanded(expanded => !expanded)} className={className}>
+        <ListItem button onClick={() => setExpanded(expanded => !expanded)} style={{paddingLeft: theme.spacing(4 * nestDepth)}}>
             <ListItemIcon>
                 {expanded ? <FolderOpen /> : <Folder />}
             </ListItemIcon>
@@ -61,7 +53,7 @@ export default function KeyGroup({groups, i18nData, setI18nData, groupName, name
             </ListItemText>
             {expanded ? <ExpandLess /> : <ExpandMore />}
         </ListItem>
-        <Collapse in={expanded} className={className} unmountOnExit>
+        <Collapse in={expanded} unmountOnExit>
             <List component="div" disablePadding>
                 {Object.entries(groupData).sort(
                     ([keyA,], [keyB,]) => keyA < keyB ? -1 : 1
@@ -74,7 +66,7 @@ export default function KeyGroup({groups, i18nData, setI18nData, groupName, name
                             namespace={namespace}
                             key={key}
                             transKey={key}
-                            className={nested}
+                            nestDepth={nestDepth + 1}
                         /> :
                             <KeyGroup
                                 groups={myGroups}
@@ -83,12 +75,15 @@ export default function KeyGroup({groups, i18nData, setI18nData, groupName, name
                                 namespace={namespace}
                                 key={key}
                                 groupName={key}
-                                className={nested}
+                                nestDepth={nestDepth + 1}
                             />
                 )}
                 <ListItem
                     button
                     onClick={() => setKeyDialogueOpen(true)}
+                    style={{
+                        paddingLeft: theme.spacing(4 * (nestDepth + 1)),
+                    }}
                 >
                     <ListItemIcon>
                         <Add />
@@ -100,6 +95,9 @@ export default function KeyGroup({groups, i18nData, setI18nData, groupName, name
                 <ListItem
                     button
                     onClick={() => setKeyGroupDialogueOpen(true)}
+                    style={{
+                        paddingLeft: theme.spacing(4 * (nestDepth + 1)),
+                    }}
                 >
                     <ListItemIcon>
                         <CreateNewFolder />
@@ -116,6 +114,9 @@ export default function KeyGroup({groups, i18nData, setI18nData, groupName, name
                             ...i18nData,
                             unsaved: true,
                         });
+                    }}
+                    style={{
+                        paddingLeft: theme.spacing(4 * (nestDepth + 1)),
                     }}
                 >
                     <ListItemIcon>

@@ -42,7 +42,8 @@
             "name": "Namespace name",
             "delete": "Delete namespace",
             "add_key": "Add new key",
-            "add_group": "Add new key group"
+            "add_group": "Add new key group",
+            "completion": "Language completion"
         },
         "add_key": {
             "title": "Add key",

@@ -113,9 +113,9 @@ export default function NamespaceContent({i18nData, setI18nData}: NamespaceConte
                     </Centred>
                     <Grid container spacing={2}>
                         {i18nData.langs.map(lang => {
-                            const complete = 100 * flatKeys.filter(
+                            const complete = flatKeys.length ? 100 * flatKeys.filter(
                                 key => getKeyValue(i18nData.data[lang][namespace], key)
-                            ).length / flatKeys.length;
+                            ).length / flatKeys.length : 100;
                             return <Grid item xs={12} sm={6} md={2} xl={1} key={lang}>
                                 <Centred>
                                     {lang}:
@@ -154,6 +154,7 @@ export default function NamespaceContent({i18nData, setI18nData}: NamespaceConte
                             transKey={key}
                             namespace={namespace}
                             groups={[]}
+                            nestDepth={1}
                         />
                         : <KeyGroup
                             key={key}
@@ -162,6 +163,7 @@ export default function NamespaceContent({i18nData, setI18nData}: NamespaceConte
                             setI18nData={setI18nData}
                             namespace={namespace}
                             groups={[]}
+                            nestDepth={1}
                         />
                 )}
                 <ListItem button onClick={() => setKeyDialogueOpen(true)}>

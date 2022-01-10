@@ -21,8 +21,8 @@
 import {ListItem, ListItemIcon, ListItemText} from "@material-ui/core";
 import {Add, Close, Folder, Save, Settings} from "@material-ui/icons";
 import i18n from 'i18next';
-import isElectron from "is-electron";
-import {useCallback, useEffect} from "react";
+// import isElectron from "is-electron";
+import {useCallback} from "react";
 import {useTranslation} from "react-i18next";
 import {Link, useLocation} from 'react-router-dom';
 import type {I18nData, I18nRoot, LoadedI18nRoot, Namespaces} from "../misc";
@@ -143,7 +143,7 @@ async function saveData(i18nData: LoadedI18nRoot, setI18nData: (i18nData: I18nRo
             try {
                 let file = await langDir.getFileHandle(`${ns}.json`, {create: true});
                 let writeableStream = await file.createWritable();
-                await writeableStream.write(JSON.stringify(data));
+                await writeableStream.write(JSON.stringify(data, null, 4));
                 await writeableStream.close();
             } catch (error) {
                 console.warn(t('core:save.warn.namespace_fail', {lang, ns, error}));
@@ -158,7 +158,7 @@ async function saveData(i18nData: LoadedI18nRoot, setI18nData: (i18nData: I18nRo
     }
 }
 
-const {ipcRenderer} = isElectron() ? window.require('electron') : {ipcRenderer: undefined};
+// const {ipcRenderer} = isElectron() ? window.require('electron') : {ipcRenderer: undefined};
 
 interface FileTreeProps {
     i18nData: I18nRoot;
@@ -189,32 +189,32 @@ export function FileTree({i18nData, setI18nData}: FileTreeProps) {
     );
     const {pathname} = useLocation();
     const loaded = pathname.replace(/^\//, '');
-    useEffect(
-        () => {
-            if (!isElectron()) {
-                return;
-            }
-            function saveErrors(errors: [string, any][]) {
-                for (let [error, params] of errors) {
-                    console.warn(t(error, params));
-                }
-                alert(t('core:save.warn.alert'));
-            }
-            function saveSuccess() {
-                if (!i18nData.loaded) {
-                    return;
-                }
-                setI18nData({...i18nData, unsaved: false});
-            }
-            ipcRenderer.addListener('saveErrors', saveErrors);
-            ipcRenderer.addListener('saveSuccess', saveSuccess);
-            return () => {
-                ipcRenderer.removeListener('saveErrors', saveErrors);
-                ipcRenderer.removeListener('saveSuccess', saveSuccess);
-            };
-        },
-        [setI18nData, i18nData, t],
-    );
+    // useEffect(
+    //     () => {
+    //         if (!isElectron()) {
+    //             return;
+    //         }
+    //         function saveErrors(errors: [string, any][]) {
+    //             for (let [error, params] of errors) {
+    //                 console.warn(t(error, params));
+    //             }
+    //             alert(t('core:save.warn.alert'));
+    //         }
+    //         function saveSuccess() {
+    //             if (!i18nData.loaded) {
+    //                 return;
+    //             }
+    //             setI18nData({...i18nData, unsaved: false});
+    //         }
+    //         ipcRenderer.addListener('saveErrors', saveErrors);
+    //         ipcRenderer.addListener('saveSuccess', saveSuccess);
+    //         return () => {
+    //             ipcRenderer.removeListener('saveErrors', saveErrors);
+    //             ipcRenderer.removeListener('saveSuccess', saveSuccess);
+    //         };
+    //     },
+    //     [setI18nData, i18nData, t],
+    // );
     if (!i18nData.loaded) {
         return <ListItem
             button
@@ -224,11 +224,11 @@ export function FileTree({i18nData, setI18nData}: FileTreeProps) {
             <ListItemText>{t('core:sidebar.load_data')}</ListItemText>
         </ListItem>;
     }
-    if (isElectron()) {
-        saveCallback = () => ipcRenderer.send('triggerSave', i18nData);
-    } else {
-        saveCallback = () => saveData(i18nData, setI18nData);
-    }
+    // if (isElectron()) {
+    //     saveCallback = () => ipcRenderer.send('triggerSave', i18nData);
+    // } else {
+    saveCallback = () => saveData(i18nData, setI18nData);
+    // }
     return <>
         <ListItem
             button
